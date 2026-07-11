@@ -1,46 +1,8 @@
 const Service = require('../models/Service');
 
-const DEFAULT_SERVICES = [
-  {
-    title: "Audit",
-    description:
-      "Comprehensive audit services ensuring financial accuracy, transparency, and regulatory compliance for your organization.",
-  },
-  {
-    title: "Tax Advisory",
-    description:
-      "Strategic tax planning and optimization to minimize your tax burden while maximizing financial efficiency.",
-  },
-  {
-    title: "Financial Consulting",
-    description:
-      "Expert financial guidance to improve profitability, cash flow management, and long-term financial planning.",
-  },
-  {
-    title: "Business Management",
-    description:
-      "Comprehensive business management solutions to streamline operations and drive sustainable growth.",
-  },
-  {
-    title: "Compliance & Financial Product Development",
-    description:
-      "Develop compliant financial products and ensure regulatory adherence across all business operations.",
-  },
-  {
-    title: "Supporting Business Growth",
-    description:
-      "Strategic initiatives and support to accelerate your business growth and achieve your objectives.",
-  },
-];
-
 
 const getServices = async (req, res) => {
-  let services = await Service.find();
-
-  // If database is empty, create default services
-  if (!services.length) {
-    services = await Service.insertMany(DEFAULT_SERVICES);
-  }
+  const services = await Service.find();
 
   return res.status(200).json({
     success: true,

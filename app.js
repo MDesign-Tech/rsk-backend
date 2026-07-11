@@ -25,7 +25,7 @@ app.use(
   })
 );
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' ? POR : 'http://localhost:3000',
+  origin: process.env.NODE_ENV === 'production' ? true : 'http://localhost:3000',
   credentials: true,
 }));
 app.use(express.json());
