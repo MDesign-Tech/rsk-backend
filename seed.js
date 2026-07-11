@@ -5,6 +5,8 @@ const AboutUs = require('./models/AboutUs');
 const FAQ = require('./models/FAQ');
 const MissionVision = require('./models/MissionVision');
 const Service = require('./models/Service');
+const HeroContent = require('./models/HeroContent');
+const Partner = require('./models/Partner');
 
 const DEFAULT_ABOUT = {
   title: "About RSK Associates",
@@ -84,6 +86,35 @@ const DEFAULT_MISSION_VISION = {
   visionTitle: "Our Vision",
   visionDescription:
     "To be the trusted partner of choice for businesses seeking financial excellence and strategic transformation. We envision a future where our clients thrive in a dynamic marketplace, supported by our innovative solutions, forward-thinking approach, and unwavering commitment to their success and growth.",
+};
+
+const DEFAULT_PARTNERS = [
+  {
+    name: "Bank of Kigali",
+    text: "BK",
+  },
+  {
+    name: "MTN Rwanda",
+    text: "MTN",
+  },
+  {
+    name: "Umujyi wa Kigali",
+    text: "UMUGI WA KIGALI",
+  },
+  {
+    name: "Airtel Rwanda",
+    text: "Airtel",
+  },
+  {
+    name: "Sensitive",
+    text: "Sensitive",
+  },
+];
+
+const DEFAULT_HERO = {
+  title: 'Welcome to RSK Associates',
+  subtitle: 'Professional Audit, Tax Advisory, and Financial Consulting Services',
+  trust: 'Trusted by 500+ businesses worldwide',
 };
 
 const DEFAULT_SERVICES = [
@@ -170,6 +201,22 @@ const seedData = async () => {
       console.log('Default service data created successfully');
     } else {
       console.log('Service data already exists');
+    }
+
+    const heroExists = await HeroContent.findOne();
+    if (!heroExists) {
+      await HeroContent.create(DEFAULT_HERO);
+      console.log('Default hero data created successfully');
+    } else {
+      console.log('Hero data already exists');
+    }
+
+    const partnerExists = await Partner.findOne();
+    if (!partnerExists) {
+      await Partner.insertMany(DEFAULT_PARTNERS);
+      console.log('Default partner data created successfully');
+    } else {
+      console.log('Partner data already exists');
     }
 
     console.log('All seeds completed successfully');

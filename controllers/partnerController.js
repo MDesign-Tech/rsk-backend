@@ -1,36 +1,8 @@
 const Partner = require('../models/Partner');
 
-const DEFAULT_PARTNERS = [
-  {
-    name: "Bank of Kigali",
-    text: "BK",
-  },
-  {
-    name: "MTN Rwanda",
-    text: "MTN",
-  },
-  {
-    name: "Umujyi wa Kigali",
-    text: "UMUGI WA KIGALI",
-  },
-  {
-    name: "Airtel Rwanda",
-    text: "Airtel",
-  },
-  {
-    name: "Sensitive",
-    text: "Sensitive",
-  },
-];
-
 
 const getPartners = async (req, res) => {
-  let partners = await Partner.find();
-
-  // Create default partners if database is empty
-  if (!partners.length) {
-    partners = await Partner.insertMany(DEFAULT_PARTNERS);
-  }
+  const partners = await Partner.find();
 
   return res.status(200).json({
     success: true,

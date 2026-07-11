@@ -2,13 +2,13 @@ const HeroContent = require('../models/HeroContent');
 const { upload, deleteFile } = require('../middleware/upload');
 
 const getHero = async (req, res) => {
-  let hero = await HeroContent.findOne();
+  const hero = await HeroContent.findOne();
 
   if (!hero) {
-    hero = await HeroContent.create({
-      title: 'Welcome to RSK Associates',
-      subtitle: 'Professional Audit, Tax Advisory, and Financial Consulting Services',
-      trust: 'Trusted by 500+ businesses worldwide',
+    return res.status(404).json({
+      success: false,
+      message: 'Hero content not found',
+      errors: ['No hero content available'],
     });
   }
 
