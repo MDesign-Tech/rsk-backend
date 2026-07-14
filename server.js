@@ -29,7 +29,11 @@ if (process.env.VERCEL !== '1') {
 
   initServer();
 } else {
-  // For Vercel serverless, export the serverless handler
+  // For Vercel serverless, connect to DB at module load time
+  connectDB().catch(err => {
+    console.error("Failed to connect to MongoDB on Vercel:", err.message);
+  });
+
   const serverless = require("serverless-http");
   module.exports = serverless(app);
 }

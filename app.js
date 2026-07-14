@@ -4,7 +4,6 @@ const cors = require('cors');
 const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
 const errorHandler = require('./middleware/errorHandler');
-const connectDB = require('./config/db');
 
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
@@ -19,16 +18,6 @@ const contactRoutes = require('./routes/contactRoutes');
 const websiteRoute = require('./routes/website.routes')
 
 const app = express();
-
-// Connect to database (with caching for serverless)
-app.use(async (req, res, next) => {
-  try {
-    await connectDB();
-    next();
-  } catch (err) {
-    next(err);
-  }
-});
 
 app.use(
   helmet({
