@@ -4,6 +4,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
 const errorHandler = require('./middleware/errorHandler');
+const connectDB = require('./config/db');
 
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
@@ -19,6 +20,23 @@ const websiteRoute = require('./routes/website.routes')
 
 const app = express();
 
+// Request logging middleware
+app.use((req, res, next) => {
+  console.log(`Incoming request: ${req.method} ${req.path}`);
+  next();
+});
+
+// Connect to database
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    console.error("DB connection error in middleware:", err.message);
+    next(err);
+  }
+});
+
 app.use(
   helmet({
     crossOriginResourcePolicy: false,
@@ -33,6 +51,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 app.use('/uploads', express.static('uploads'));
+
+// Simple test route to verify routing works
+app.get('/api/test', (req, res) => {
+  console.log("Test route handler executing");
+  res.json({ success: true, message: "Test route works" });
+});
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
