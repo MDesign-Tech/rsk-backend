@@ -8,30 +8,30 @@ const TeamMember = require("../models/TeamMember");
 
 exports.getWebsiteContent = async (req, res, next) => {
   try {
-    const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error("Request timeout: database query took too long")), 10000);
-    });
+    console.log("Starting website content fetch...");
 
-    const [
-      hero,
-      about,
-      missionVision,
-      services,
-      partners,
-      faqs,
-      teamMembers
-    ] = await Promise.race([
-      Promise.all([
-        Hero.findOne(),
-        About.findOne(),
-        MissionVision.findOne(),
-        Service.find(),
-        Partner.find(),
-        FAQ.find(),
-        TeamMember.find()
-      ]),
-      timeoutPromise
-    ]);
+    const hero = await Hero.findOne();
+    console.log("Hero fetched:", !!hero);
+
+    const about = await About.findOne();
+    console.log("About fetched:", !!about);
+
+    const missionVision = await MissionVision.findOne();
+    console.log("MissionVision fetched:", !!missionVision);
+
+    const services = await Service.find();
+    console.log("Services fetched count:", services.length);
+
+    const partners = await Partner.find();
+    console.log("Partners fetched count:", partners.length);
+
+    const faqs = await FAQ.find();
+    console.log("FAQs fetched count:", faqs.length);
+
+    const teamMembers = await TeamMember.find();
+    console.log("TeamMembers fetched count:", teamMembers.length);
+
+    console.log("All queries completed successfully");
 
     res.json({
       success: true,

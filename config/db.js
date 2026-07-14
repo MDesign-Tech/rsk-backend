@@ -1,10 +1,16 @@
 const mongoose = require("mongoose");
 
 const connectDB = async () => {
-  // Check if mongoose is actually connected (readyState 1 = connected)
+  // If readyState is 1, verify the connection is actually alive with a ping
   if (mongoose.connection.readyState === 1) {
-    console.log("Using existing MongoDB connection");
-    return;
+    try {
+      await mongoose.connection.db.admin().ping();
+      console.log("Using existing MongoDB connection (verified alive)");
+      return;
+    } catch (err) {
+      console.log("Existing connection is dead, reconnecting...");
+      // Connection is dead, fall through to reconnect
+    }
   }
 
   if (!process.env.MONGODB_URI) {
@@ -19,6 +25,20 @@ const connectDB = async () => {
     });
 
     console.log(`MongoDB Connected: ${conn.connection.host}`);
+
+    // Listen for connection drops
+    mongoose.connection.on('disconnected', () => {
+      console.log('MongoDB connection disconnected');
+    });
+
+    mongoose.connection.on('error', (err) => {
+      console.error('MongoDB connection error:', err.message);
+    });
+
+    mongoose.connection.on('reconnected', () => {
+      console.log('MongoDB connection reconnected');
+    });
+
   } catch (err) {
     console.error("MongoDB connection error:", err.message);
     throw err;
