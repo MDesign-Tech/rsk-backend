@@ -14,6 +14,9 @@ process.on("unhandledRejection", (err) => {
 async function initServer() {
   try {
     await connectDB();
+
+    await seedData();
+
     app.listen(PORT, () => {
       console.log(
         `Server running in ${process.env.NODE_ENV} mode on port ${PORT}`,

@@ -1,4 +1,4 @@
-const Hero = require("../models/HeroContent");
+const Hero = require('../models/HeroContent')
 const About = require("../models/AboutUs");
 const MissionVision = require("../models/MissionVision");
 const Service = require("../models/Service");
