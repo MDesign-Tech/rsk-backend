@@ -1,24 +1,25 @@
 const mongoose = require("mongoose");
 
+let isConnected = false;
+
 const connectDB = async () => {
-  console.log("connectDB called");
-
-  console.log("Mongo URI exists:", !!process.env.MONGODB_URI);
-
-  console.log("Connection state:", mongoose.connection.readyState);
-
-  if (mongoose.connection.readyState === 1) {
-    console.log("Already connected");
+  if (isConnected) {
+    console.log("Using existing MongoDB connection");
     return;
   }
 
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI);
+    const conn = await mongoose.connect(process.env.MONGODB_URI, {
+      bufferCommands: false, // Disable buffering to prevent timeout errors
+      serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+      socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
+    });
 
-    console.log("Connected:", conn.connection.host);
-
+    isConnected = true;
+    console.log(`MongoDB Connected: ${conn.connection.host}`);
   } catch (err) {
-    console.error("Mongo error:", err);
+    console.error("MongoDB connection error:", err);
+    isConnected = false;
     throw err;
   }
 };
