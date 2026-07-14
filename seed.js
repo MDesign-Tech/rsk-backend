@@ -1,5 +1,3 @@
-require('dotenv').config();
-const connectDB = require('./config/db');
 const User = require('./models/User');
 const AboutUs = require('./models/AboutUs');
 const FAQ = require('./models/FAQ');
@@ -152,8 +150,6 @@ const DEFAULT_SERVICES = [
 
 const seedData = async () => {
   try {
-    await connectDB();
-
     const adminExists = await User.findOne({ email: 'admin@rskassociates.com' });
 
     if (adminExists) {
