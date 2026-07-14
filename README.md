@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # RSK Associates - Backend API
 
 A lightweight REST API backend for RSK Associates corporate company website CMS.
@@ -248,3 +249,6 @@ Only hero background image and team member image uploads are supported.
 ## License
 
 ISC
+=======
+# rsk-backend
+>>>>>>> 5fa3ad39fe1b025fa6b77e1b0e07ea44a0fecbc2
