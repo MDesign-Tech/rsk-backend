@@ -26,6 +26,10 @@ const aboutUsSchema = new mongoose.Schema(
           required: true,
           trim: true,
         },
+        visible: {
+          type: Boolean,
+          default: true,
+        },
       },
     ],
 
@@ -46,6 +50,11 @@ const aboutUsSchema = new mongoose.Schema(
         href: {
           type: String,
           default: null,
+        },
+
+        visible: {
+          type: Boolean,
+          default: true,
         },
       },
     ],
