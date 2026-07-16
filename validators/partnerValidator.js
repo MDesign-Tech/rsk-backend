@@ -4,7 +4,7 @@ const validatePartner = [
   body('name')
     .notEmpty().withMessage('Partner name is required')
     .trim(),
-  body('text')
+  body('image')
     .optional()
     .trim(),
 ];

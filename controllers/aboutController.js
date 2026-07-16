@@ -26,6 +26,14 @@ const updateAbout = async (req, res) => {
   if (!about) {
     about = await AboutUs.create(req.body);
   } else {
+    if (req.body.socialMedia) {
+      about.socialMedia = {
+        ...about.socialMedia,
+        ...req.body.socialMedia,
+      };
+      delete req.body.socialMedia;
+    }
+
     Object.assign(about, req.body);
 
     await about.save();
@@ -34,6 +42,44 @@ const updateAbout = async (req, res) => {
   res.status(200).json({
     success: true,
     message: "About updated successfully",
+    data: {
+      about,
+    },
+  });
+};
+
+const toggleSocialMediaVisibility = async (req, res) => {
+  let about = await AboutUs.findOne();
+
+  if (!about) {
+    return res.status(404).json({
+      success: false,
+      message: "About data not found",
+      errors: ["No about data available"],
+    });
+  }
+
+  const platform = req.params.platform;
+  const validPlatforms = ['facebook', 'instagram', 'whatsapp', 'x', 'linkedin', 'youtube'];
+
+  if (!validPlatforms.includes(platform)) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid social media platform",
+      errors: [`Platform must be one of: ${validPlatforms.join(', ')}`],
+    });
+  }
+
+  if (!about.socialMedia[platform]) {
+    about.socialMedia[platform] = { href: null, visible: true };
+  }
+
+  about.socialMedia[platform].visible = req.body.visible;
+  await about.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Social media visibility updated successfully",
     data: {
       about,
     },
@@ -135,4 +181,5 @@ module.exports = {
   toggleAboutVisibility,
   toggleStatVisibility,
   toggleContactMethodVisibility,
+  toggleSocialMediaVisibility,
 };

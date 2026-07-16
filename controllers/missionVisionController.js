@@ -24,11 +24,9 @@ const updateMissionVision = async (req, res) => {
   if (!missionVision) {
     missionVision = await MissionVision.create(req.body);
   } else {
-    missionVision.missionTitle = req.body.missionTitle;
-    missionVision.missionDescription = req.body.missionDescription;
-    missionVision.visionTitle = req.body.visionTitle;
-    missionVision.visionDescription = req.body.visionDescription;
-
+    // Object.assign only sets provided fields, so partial updates
+    // (e.g. { visible: false }) don't overwrite existing data with undefined.
+    Object.assign(missionVision, req.body);
     await missionVision.save();
   }
 
@@ -39,29 +37,7 @@ const updateMissionVision = async (req, res) => {
   });
 };
 
-const toggleMissionVisionVisibility = async (req, res) => {
-  let missionVision = await MissionVision.findOne();
-
-  if (!missionVision) {
-    return res.status(404).json({
-      success: false,
-      message: "Mission and Vision not found",
-      errors: ["No mission and vision data available"],
-    });
-  }
-
-  missionVision.visible = req.body.visible;
-  await missionVision.save();
-
-  return res.status(200).json({
-    success: true,
-    message: "Mission and Vision visibility updated successfully",
-    data: missionVision,
-  });
-};
-
 module.exports = {
   getMissionVision,
   updateMissionVision,
-  toggleMissionVisionVisibility,
 };

@@ -11,7 +11,5 @@ router.use(protect);
 router.get('/', getAbout);
 router.put('/', validateAbout, updateAbout);
 router.patch('/visibility', body('visible').isBoolean().exists({ checkFalsy: true }), toggleAboutVisibility);
-router.patch('/stats/:index/visibility', param('index').isInt({ min: 0 }), body('visible').isBoolean().exists({ checkFalsy: true }), toggleStatVisibility);
-router.patch('/contact-methods/:index/visibility', param('index').isInt({ min: 0 }), body('visible').isBoolean().exists({ checkFalsy: true }), toggleContactMethodVisibility);
 
 module.exports = router;

@@ -46,6 +46,33 @@ const DEFAULT_ABOUT = {
       href: "https://www.google.com/maps/dir//KG+11+Ave,+Kigali",
     },
   ],
+
+  socialMedia: {
+    facebook: {
+      href: null,
+      visible: true,
+    },
+    instagram: {
+      href: "https://www.instagram.com/rska_ssociates",
+      visible: true,
+    },
+    whatsapp: {
+      href: null,
+      visible: true,
+    },
+    x: {
+      href: null,
+      visible: true,
+    },
+    linkedin: {
+      href: "https://www.linkedin.com/company/rsk-associates-ltd/about/",
+      visible: true,
+    },
+    youtube: {
+      href: null,
+      visible: true,
+    },
+  },
 };
 
 const DEFAULT_FAQS = [
@@ -89,23 +116,18 @@ const DEFAULT_MISSION_VISION = {
 const DEFAULT_PARTNERS = [
   {
     name: "Bank of Kigali",
-    text: "BK",
   },
   {
     name: "MTN Rwanda",
-    text: "MTN",
   },
   {
     name: "Umujyi wa Kigali",
-    text: "UMUGI WA KIGALI",
   },
   {
     name: "Airtel Rwanda",
-    text: "Airtel",
   },
   {
     name: "Sensitive",
-    text: "Sensitive",
   },
 ];
 

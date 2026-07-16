@@ -6,10 +6,12 @@ const {
   createPartner,
   updatePartner,
   deletePartner,
+  uploadPartnerImage,
   togglePartnerVisibility,
 } = require('../controllers/partnerController');
 const { validatePartner } = require('../validators/partnerValidator');
 const { protect } = require('../middleware/auth');
+const { upload } = require('../middleware/upload');
 
 const router = express.Router();
 
@@ -20,6 +22,7 @@ router.get('/:id', getPartner);
 router.post('/', validatePartner, createPartner);
 router.put('/:id', validatePartner, updatePartner);
 router.delete('/:id', deletePartner);
+router.post('/:id/upload', upload.single('image'), uploadPartnerImage);
 router.patch('/:id/visibility', body('visible').isBoolean().exists({ checkFalsy: true }), togglePartnerVisibility);
 
 module.exports = router;
