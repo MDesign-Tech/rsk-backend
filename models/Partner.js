@@ -7,9 +7,13 @@ const partnerSchema = new mongoose.Schema(
       required: [true, 'Partner name is required'],
       trim: true,
     },
-    text: {
+    image: {
       type: String,
-      trim: true,
+      default: null,
+    },
+    visible: {
+      type: Boolean,
+      default: true,
     },
   },
   {

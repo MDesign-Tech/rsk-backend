@@ -2,7 +2,10 @@ const TeamMember = require('../models/TeamMember');
 const { upload, deleteFile } = require('../middleware/upload');
 
 const getTeamMembers = async (req, res) => {
-  const teamMembers = await TeamMember.find();
+  const { visible } = req.query;
+  const filter = visible !== undefined ? { visible: visible === 'true' } : {};
+
+  const teamMembers = await TeamMember.find(filter);
   return res.status(200).json({
     success: true,
     message: 'Team members retrieved successfully',
@@ -107,6 +110,27 @@ const uploadTeamMemberImage = async (req, res) => {
   });
 };
 
+const toggleTeamMemberVisibility = async (req, res) => {
+  const teamMember = await TeamMember.findById(req.params.id);
+
+  if (!teamMember) {
+    return res.status(404).json({
+      success: false,
+      message: 'Team member not found',
+      errors: ['No team member found with this ID'],
+    });
+  }
+
+  teamMember.visible = req.body.visible;
+  await teamMember.save();
+
+  return res.status(200).json({
+    success: true,
+    message: 'Team member visibility updated successfully',
+    data: { teamMember },
+  });
+};
+
 module.exports = {
   getTeamMembers,
   getTeamMember,
@@ -114,4 +138,5 @@ module.exports = {
   updateTeamMember,
   deleteTeamMember,
   uploadTeamMemberImage,
+  toggleTeamMemberVisibility,
 };

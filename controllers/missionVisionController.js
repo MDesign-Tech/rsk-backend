@@ -24,11 +24,9 @@ const updateMissionVision = async (req, res) => {
   if (!missionVision) {
     missionVision = await MissionVision.create(req.body);
   } else {
-    missionVision.missionTitle = req.body.missionTitle;
-    missionVision.missionDescription = req.body.missionDescription;
-    missionVision.visionTitle = req.body.visionTitle;
-    missionVision.visionDescription = req.body.visionDescription;
-
+    // Object.assign only sets provided fields, so partial updates
+    // (e.g. { visible: false }) don't overwrite existing data with undefined.
+    Object.assign(missionVision, req.body);
     await missionVision.save();
   }
 

@@ -2,7 +2,10 @@ const Service = require('../models/Service');
 
 
 const getServices = async (req, res) => {
-  const services = await Service.find();
+  const { visible } = req.query;
+  const filter = visible !== undefined ? { visible: visible === 'true' } : {};
+
+  const services = await Service.find(filter);
 
   return res.status(200).json({
     success: true,
@@ -85,10 +88,32 @@ const deleteService = async (req, res) => {
 };
 
 
+const toggleServiceVisibility = async (req, res) => {
+  const service = await Service.findById(req.params.id);
+
+  if (!service) {
+    return res.status(404).json({
+      success: false,
+      message: 'Service not found',
+      errors: ['No service found with this ID'],
+    });
+  }
+
+  service.visible = req.body.visible;
+  await service.save();
+
+  return res.status(200).json({
+    success: true,
+    message: 'Service visibility updated successfully',
+    data: { service },
+  });
+};
+
 module.exports = {
   getServices,
   getService,
   createService,
   updateService,
   deleteService,
+  toggleServiceVisibility,
 };

@@ -16,6 +16,14 @@ const heroContentSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    subtitleVisible: {
+      type: Boolean,
+      default: true,
+    },
+    trustVisible: {
+      type: Boolean,
+      default: true,
+    },
     bgImage: {
       type: String,
       default: null,

@@ -12,6 +12,10 @@ const serviceSchema = new mongoose.Schema(
       required: [true, 'Service description is required'],
       trim: true,
     },
+    visible: {
+      type: Boolean,
+      default: true,
+    },
   },
   {
     timestamps: true,

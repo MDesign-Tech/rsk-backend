@@ -26,6 +26,10 @@ const aboutUsSchema = new mongoose.Schema(
           required: true,
           trim: true,
         },
+        visible: {
+          type: Boolean,
+          default: true,
+        },
       },
     ],
 
@@ -47,8 +51,81 @@ const aboutUsSchema = new mongoose.Schema(
           type: String,
           default: null,
         },
+
+        visible: {
+          type: Boolean,
+          default: true,
+        },
       },
     ],
+
+    socialMedia: {
+      facebook: {
+        href: {
+          type: String,
+          default: null,
+        },
+        visible: {
+          type: Boolean,
+          default: true,
+        },
+      },
+      instagram: {
+        href: {
+          type: String,
+          default: null,
+        },
+        visible: {
+          type: Boolean,
+          default: true,
+        },
+      },
+      whatsapp: {
+        href: {
+          type: String,
+          default: null,
+        },
+        visible: {
+          type: Boolean,
+          default: true,
+        },
+      },
+      x: {
+        href: {
+          type: String,
+          default: null,
+        },
+        visible: {
+          type: Boolean,
+          default: true,
+        },
+      },
+      linkedin: {
+        href: {
+          type: String,
+          default: null,
+        },
+        visible: {
+          type: Boolean,
+          default: true,
+        },
+      },
+      youtube: {
+        href: {
+          type: String,
+          default: null,
+        },
+        visible: {
+          type: Boolean,
+          default: true,
+        },
+      },
+    },
+
+    visible: {
+      type: Boolean,
+      default: true,
+    },
   },
   {
     timestamps: true,
