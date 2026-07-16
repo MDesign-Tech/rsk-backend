@@ -39,7 +39,29 @@ const updateMissionVision = async (req, res) => {
   });
 };
 
+const toggleMissionVisionVisibility = async (req, res) => {
+  let missionVision = await MissionVision.findOne();
+
+  if (!missionVision) {
+    return res.status(404).json({
+      success: false,
+      message: "Mission and Vision not found",
+      errors: ["No mission and vision data available"],
+    });
+  }
+
+  missionVision.visible = req.body.visible;
+  await missionVision.save();
+
+  return res.status(200).json({
+    success: true,
+    message: "Mission and Vision visibility updated successfully",
+    data: missionVision,
+  });
+};
+
 module.exports = {
   getMissionVision,
   updateMissionVision,
+  toggleMissionVisionVisibility,
 };

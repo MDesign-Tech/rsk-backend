@@ -25,6 +25,11 @@ const missionVisionSchema = new mongoose.Schema(
       required: [true, "Vision description is required"],
       trim: true,
     },
+
+    visible: {
+      type: Boolean,
+      default: true,
+    },
   },
   {
     timestamps: true,

@@ -49,6 +49,11 @@ const aboutUsSchema = new mongoose.Schema(
         },
       },
     ],
+
+    visible: {
+      type: Boolean,
+      default: true,
+    },
   },
   {
     timestamps: true,

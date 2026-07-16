@@ -40,7 +40,31 @@ const updateAbout = async (req, res) => {
   });
 };
 
+const toggleAboutVisibility = async (req, res) => {
+  let about = await AboutUs.findOne();
+
+  if (!about) {
+    return res.status(404).json({
+      success: false,
+      message: "About data not found",
+      errors: ["No about data available"],
+    });
+  }
+
+  about.visible = req.body.visible;
+  await about.save();
+
+  res.status(200).json({
+    success: true,
+    message: "About visibility updated successfully",
+    data: {
+      about,
+    },
+  });
+};
+
 module.exports = {
   getAbout,
   updateAbout,
+  toggleAboutVisibility,
 };

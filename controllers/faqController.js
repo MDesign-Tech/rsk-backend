@@ -1,7 +1,10 @@
 const FAQ = require('../models/FAQ');
 
 const getFAQs = async (req, res) => {
-  const faqs = await FAQ.find();
+  const { visible } = req.query;
+  const filter = visible !== undefined ? { visible: visible === 'true' } : {};
+
+  const faqs = await FAQ.find(filter);
 
   return res.status(200).json({
     success: true,
@@ -78,10 +81,32 @@ const deleteFAQ = async (req, res) => {
   });
 };
 
+const toggleFAQVisibility = async (req, res) => {
+  const faq = await FAQ.findById(req.params.id);
+
+  if (!faq) {
+    return res.status(404).json({
+      success: false,
+      message: 'FAQ not found',
+      errors: ['No FAQ found with this ID'],
+    });
+  }
+
+  faq.visible = req.body.visible;
+  await faq.save();
+
+  return res.status(200).json({
+    success: true,
+    message: 'FAQ visibility updated successfully',
+    data: { faq },
+  });
+};
+
 module.exports = {
   getFAQs,
   getFAQ,
   createFAQ,
   updateFAQ,
   deleteFAQ,
+  toggleFAQVisibility,
 };

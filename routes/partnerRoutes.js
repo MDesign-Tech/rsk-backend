@@ -6,6 +6,7 @@ const {
   createPartner,
   updatePartner,
   deletePartner,
+  togglePartnerVisibility,
 } = require('../controllers/partnerController');
 const { validatePartner } = require('../validators/partnerValidator');
 const { protect } = require('../middleware/auth');
@@ -19,5 +20,6 @@ router.get('/:id', getPartner);
 router.post('/', validatePartner, createPartner);
 router.put('/:id', validatePartner, updatePartner);
 router.delete('/:id', deletePartner);
+router.patch('/:id/visibility', body('visible').isBoolean().exists({ checkFalsy: true }), togglePartnerVisibility);
 
 module.exports = router;

@@ -12,6 +12,10 @@ const faqSchema = new mongoose.Schema(
       required: [true, 'Answer is required'],
       trim: true,
     },
+    visible: {
+      type: Boolean,
+      default: true,
+    },
   },
   {
     timestamps: true,

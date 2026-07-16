@@ -2,7 +2,10 @@ const Partner = require('../models/Partner');
 
 
 const getPartners = async (req, res) => {
-  const partners = await Partner.find();
+  const { visible } = req.query;
+  const filter = visible !== undefined ? { visible: visible === 'true' } : {};
+
+  const partners = await Partner.find(filter);
 
   return res.status(200).json({
     success: true,
@@ -85,10 +88,32 @@ const deletePartner = async (req, res) => {
 };
 
 
+const togglePartnerVisibility = async (req, res) => {
+  const partner = await Partner.findById(req.params.id);
+
+  if (!partner) {
+    return res.status(404).json({
+      success: false,
+      message: 'Partner not found',
+      errors: ['No partner found with this ID'],
+    });
+  }
+
+  partner.visible = req.body.visible;
+  await partner.save();
+
+  return res.status(200).json({
+    success: true,
+    message: 'Partner visibility updated successfully',
+    data: { partner },
+  });
+};
+
 module.exports = {
   getPartners,
   getPartner,
   createPartner,
   updatePartner,
   deletePartner,
+  togglePartnerVisibility,
 };

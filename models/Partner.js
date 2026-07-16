@@ -11,6 +11,10 @@ const partnerSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    visible: {
+      type: Boolean,
+      default: true,
+    },
   },
   {
     timestamps: true,

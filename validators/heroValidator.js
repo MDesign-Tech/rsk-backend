@@ -10,6 +10,14 @@ const validateHero = [
   body('trust')
     .optional()
     .trim(),
+  body('subtitleVisible')
+    .optional()
+    .isBoolean().withMessage('subtitleVisible must be a boolean')
+    .toBoolean(),
+  body('trustVisible')
+    .optional()
+    .isBoolean().withMessage('trustVisible must be a boolean')
+    .toBoolean(),
 ];
 
 module.exports = { validateHero };

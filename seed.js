@@ -113,6 +113,8 @@ const DEFAULT_HERO = {
   title: 'Welcome to RSK Associates',
   subtitle: 'Professional Audit, Tax Advisory, and Financial Consulting Services',
   trust: 'Trusted by 500+ businesses worldwide',
+  subtitleVisible: true,
+  trustVisible: true,
 };
 
 const DEFAULT_SERVICES = [

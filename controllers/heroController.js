@@ -61,8 +61,52 @@ const uploadHeroImage = async (req, res) => {
   });
 };
 
+const toggleSubtitleVisibility = async (req, res) => {
+  let hero = await HeroContent.findOne();
+
+  if (!hero) {
+    return res.status(404).json({
+      success: false,
+      message: 'Hero content not found',
+      errors: ['No hero content available'],
+    });
+  }
+
+  hero.subtitleVisible = req.body.visible;
+  await hero.save();
+
+  return res.status(200).json({
+    success: true,
+    message: 'Subtitle visibility updated successfully',
+    data: { hero },
+  });
+};
+
+const toggleTrustVisibility = async (req, res) => {
+  let hero = await HeroContent.findOne();
+
+  if (!hero) {
+    return res.status(404).json({
+      success: false,
+      message: 'Hero content not found',
+      errors: ['No hero content available'],
+    });
+  }
+
+  hero.trustVisible = req.body.visible;
+  await hero.save();
+
+  return res.status(200).json({
+    success: true,
+    message: 'Trust visibility updated successfully',
+    data: { hero },
+  });
+};
+
 module.exports = {
   getHero,
   updateHero,
   uploadHeroImage,
+  toggleSubtitleVisibility,
+  toggleTrustVisibility,
 };
