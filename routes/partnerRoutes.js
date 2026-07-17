@@ -6,12 +6,12 @@ const {
   createPartner,
   updatePartner,
   deletePartner,
-  uploadPartnerImage,
   togglePartnerVisibility,
+  upload,
 } = require('../controllers/partnerController');
 const { validatePartner } = require('../validators/partnerValidator');
 const { protect } = require('../middleware/auth');
-const { upload } = require('../middleware/upload');
+const { multerErrorHandler } = require('../middleware/upload');
 
 const router = express.Router();
 
@@ -20,9 +20,15 @@ router.use(protect);
 router.get('/', getPartners);
 router.get('/:id', getPartner);
 router.post('/', validatePartner, createPartner);
-router.put('/:id', validatePartner, updatePartner);
+// PUT /partners/:id now handles both content and (optional) image updates.
+router.put(
+  '/:id',
+  upload.single('image'),
+  multerErrorHandler,
+  validatePartner,
+  updatePartner
+);
 router.delete('/:id', deletePartner);
-router.post('/:id/upload', upload.single('image'), uploadPartnerImage);
 router.patch('/:id/visibility', body('visible').isBoolean().exists({ checkFalsy: true }), togglePartnerVisibility);
 
 module.exports = router;

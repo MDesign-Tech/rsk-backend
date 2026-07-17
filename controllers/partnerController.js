@@ -1,6 +1,6 @@
 const Partner = require('../models/Partner');
 const { upload } = require('../middleware/upload');
-const { uploadToCloudinary, deleteFromCloudinary } = require('../src/utils/cloudinaryUpload');
+const { handleImageUpdate, deleteFromCloudinary } = require('../src/utils/cloudinaryUpload');
 
 
 const getPartners = async (req, res) => {
@@ -47,6 +47,10 @@ const createPartner = async (req, res) => {
 };
 
 
+// PUT /partners/:id
+// Accepts multipart/form-data. Updates text fields and, when an image file is
+// present, uploads it to Cloudinary (replacing the previous image) in the same
+// atomic request. If no image is sent, only the text fields are updated.
 const updatePartner = async (req, res) => {
   const partner = await Partner.findById(req.params.id);
 
@@ -58,14 +62,26 @@ const updatePartner = async (req, res) => {
     });
   }
 
-  Object.assign(partner, req.body);
-  await partner.save();
+  try {
+    Object.assign(partner, req.body);
 
-  return res.status(200).json({
-    success: true,
-    message: 'Partner updated successfully',
-    data: { partner },
-  });
+    await handleImageUpdate(partner, req.file, 'rsk/partners');
+
+    await partner.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Partner updated successfully',
+      data: { partner },
+    });
+  } catch (error) {
+    console.error('Partner update error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to update partner',
+      errors: [error.message || 'Unknown error'],
+    });
+  }
 };
 
 
@@ -93,47 +109,11 @@ const deletePartner = async (req, res) => {
       data: {},
     });
   } catch (error) {
+    console.error('Partner delete error:', error);
     return res.status(500).json({
       success: false,
       message: 'Failed to delete partner image from Cloudinary',
-      errors: [error.message],
-    });
-  }
-};
-
-
-const uploadPartnerImage = async (req, res) => {
-  const partner = await Partner.findById(req.params.id);
-
-  if (!partner) {
-    return res.status(404).json({
-      success: false,
-      message: 'Partner not found',
-      errors: ['No partner found with this ID'],
-    });
-  }
-
-  try {
-    if (partner.imagePublicId) {
-      await deleteFromCloudinary(partner.imagePublicId);
-    }
-
-    const result = await uploadToCloudinary(req.file.buffer, 'rsk/partners');
-
-    partner.image = result.secure_url;
-    partner.imagePublicId = result.public_id;
-    await partner.save();
-
-    return res.status(200).json({
-      success: true,
-      message: 'Image uploaded successfully',
-      data: { partner },
-    });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to upload image to Cloudinary',
-      errors: [error.message],
+      errors: [error.message || 'Unknown error'],
     });
   }
 };
@@ -166,6 +146,6 @@ module.exports = {
   createPartner,
   updatePartner,
   deletePartner,
-  uploadPartnerImage,
   togglePartnerVisibility,
+  upload, // exported for route-level multer wiring
 };

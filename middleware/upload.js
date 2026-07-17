@@ -20,4 +20,24 @@ const upload = multer({
   fileFilter,
 });
 
-module.exports = { upload };
+// Wraps multer so file-related errors (e.g. wrong type / size) are returned as
+// consistent JSON instead of the default HTML 500 response.
+const multerErrorHandler = (err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    return res.status(400).json({
+      success: false,
+      message: 'File upload error',
+      errors: [err.message],
+    });
+  }
+  if (err) {
+    return res.status(400).json({
+      success: false,
+      message: 'File upload error',
+      errors: [err.message || 'Invalid file'],
+    });
+  }
+  next();
+};
+
+module.exports = { upload, multerErrorHandler };

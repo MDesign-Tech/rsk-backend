@@ -1,6 +1,6 @@
 const HeroContent = require('../models/HeroContent');
 const { upload } = require('../middleware/upload');
-const { uploadToCloudinary, deleteFromCloudinary } = require('../src/utils/cloudinaryUpload');
+const { handleImageUpdate } = require('../src/utils/cloudinaryUpload');
 
 const getHero = async (req, res) => {
   const hero = await HeroContent.findOne();
@@ -20,55 +20,37 @@ const getHero = async (req, res) => {
   });
 };
 
+// PUT /hero
+// Accepts multipart/form-data. Updates text fields and, when an image file is
+// present, uploads it to Cloudinary (replacing the previous image) in the same
+// atomic request. If no image is sent, only the text fields are updated.
 const updateHero = async (req, res) => {
-  let hero = await HeroContent.findOne();
-
-  if (!hero) {
-    hero = await HeroContent.create(req.body);
-  } else {
-    Object.assign(hero, req.body);
-    await hero.save();
-  }
-
-  return res.status(200).json({
-    success: true,
-    message: 'Hero content updated successfully',
-    data: { hero },
-  });
-};
-
-const uploadHeroImage = async (req, res) => {
-  let hero = await HeroContent.findOne();
-
-  if (!hero) {
-    return res.status(404).json({
-      success: false,
-      message: 'Hero content not found',
-      errors: ['Please create hero content first'],
-    });
-  }
-
   try {
-    if (hero.bgImagePublicId) {
-      await deleteFromCloudinary(hero.bgImagePublicId);
+    let hero = await HeroContent.findOne();
+
+    if (!hero) {
+      hero = new HeroContent();
     }
 
-    const result = await uploadToCloudinary(req.file.buffer, 'rsk/hero');
+    // Apply text fields from the request body.
+    Object.assign(hero, req.body);
 
-    hero.bgImage = result.secure_url;
-    hero.bgImagePublicId = result.public_id;
+    // Handle image upload (no-op if no file was provided).
+    await handleImageUpdate(hero, req.file, 'rsk/hero');
+
     await hero.save();
 
     return res.status(200).json({
       success: true,
-      message: 'Hero image uploaded successfully',
+      message: 'Hero content updated successfully',
       data: { hero },
     });
   } catch (error) {
+    console.error('Hero update error:', error);
     return res.status(500).json({
       success: false,
-      message: 'Failed to upload image to Cloudinary',
-      errors: [error.message],
+      message: 'Failed to update hero content',
+      errors: [error.message || 'Unknown error'],
     });
   }
 };
@@ -76,5 +58,5 @@ const uploadHeroImage = async (req, res) => {
 module.exports = {
   getHero,
   updateHero,
-  uploadHeroImage,
+  upload, // exported for route-level multer wiring
 };

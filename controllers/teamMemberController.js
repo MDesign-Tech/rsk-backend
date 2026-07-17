@@ -1,6 +1,6 @@
 const TeamMember = require('../models/TeamMember');
 const { upload } = require('../middleware/upload');
-const { uploadToCloudinary, deleteFromCloudinary } = require('../src/utils/cloudinaryUpload');
+const { handleImageUpdate, deleteFromCloudinary } = require('../src/utils/cloudinaryUpload');
 
 const getTeamMembers = async (req, res) => {
   const { visible } = req.query;
@@ -41,6 +41,10 @@ const createTeamMember = async (req, res) => {
   });
 };
 
+// PUT /team/:id
+// Accepts multipart/form-data. Updates text fields and, when an image file is
+// present, uploads it to Cloudinary (replacing the previous image) in the same
+// atomic request. If no image is sent, only the text fields are updated.
 const updateTeamMember = async (req, res) => {
   const teamMember = await TeamMember.findById(req.params.id);
 
@@ -52,14 +56,26 @@ const updateTeamMember = async (req, res) => {
     });
   }
 
-  Object.assign(teamMember, req.body);
-  await teamMember.save();
+  try {
+    Object.assign(teamMember, req.body);
 
-  return res.status(200).json({
-    success: true,
-    message: 'Team member updated successfully',
-    data: { teamMember },
-  });
+    await handleImageUpdate(teamMember, req.file, 'rsk/team');
+
+    await teamMember.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Team member updated successfully',
+      data: { teamMember },
+    });
+  } catch (error) {
+    console.error('Team member update error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to update team member',
+      errors: [error.message || 'Unknown error'],
+    });
+  }
 };
 
 const deleteTeamMember = async (req, res) => {
@@ -86,46 +102,11 @@ const deleteTeamMember = async (req, res) => {
       data: {},
     });
   } catch (error) {
+    console.error('Team member delete error:', error);
     return res.status(500).json({
       success: false,
       message: 'Failed to delete team member image from Cloudinary',
-      errors: [error.message],
-    });
-  }
-};
-
-const uploadTeamMemberImage = async (req, res) => {
-  const teamMember = await TeamMember.findById(req.params.id);
-
-  if (!teamMember) {
-    return res.status(404).json({
-      success: false,
-      message: 'Team member not found',
-      errors: ['No team member found with this ID'],
-    });
-  }
-
-  try {
-    if (teamMember.imagePublicId) {
-      await deleteFromCloudinary(teamMember.imagePublicId);
-    }
-
-    const result = await uploadToCloudinary(req.file.buffer, 'rsk/team');
-
-    teamMember.image = result.secure_url;
-    teamMember.imagePublicId = result.public_id;
-    await teamMember.save();
-
-    return res.status(200).json({
-      success: true,
-      message: 'Image uploaded successfully',
-      data: { teamMember },
-    });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to upload image to Cloudinary',
-      errors: [error.message],
+      errors: [error.message || 'Unknown error'],
     });
   }
 };
@@ -157,6 +138,6 @@ module.exports = {
   createTeamMember,
   updateTeamMember,
   deleteTeamMember,
-  uploadTeamMemberImage,
   toggleTeamMemberVisibility,
+  upload, // exported for route-level multer wiring
 };

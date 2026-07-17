@@ -24,11 +24,11 @@ const heroContentSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
-    bgImage: {
+    image: {
       type: String,
       default: null,
     },
-    bgImagePublicId: {
+    imagePublicId: {
       type: String,
       default: null,
     },
