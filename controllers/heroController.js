@@ -1,6 +1,6 @@
-const HeroContent = require('../models/HeroContent');
-const { upload } = require('../middleware/upload');
-const { handleImageUpdate } = require('../src/utils/cloudinaryUpload');
+const HeroContent = require("../models/HeroContent");
+const { upload } = require("../middleware/upload");
+const { handleImageUpdate } = require("../src/utils/cloudinaryUpload");
 
 const getHero = async (req, res) => {
   const hero = await HeroContent.findOne();
@@ -8,14 +8,14 @@ const getHero = async (req, res) => {
   if (!hero) {
     return res.status(404).json({
       success: false,
-      message: 'Hero content not found',
-      errors: ['No hero content available'],
+      message: "Hero content not found",
+      errors: ["No hero content available"],
     });
   }
 
   return res.status(200).json({
     success: true,
-    message: 'Hero content retrieved successfully',
+    message: "Hero content retrieved successfully",
     data: { hero },
   });
 };
@@ -36,21 +36,27 @@ const updateHero = async (req, res) => {
     Object.assign(hero, req.body);
 
     // Handle image upload (no-op if no file was provided).
-    await handleImageUpdate(hero, req.file, 'rsk/hero');
+    await handleImageUpdate(hero, req.file, "rsk/hero");
+
+    console.log("========== HERO REQUEST ==========");
+    console.log("Body:", req.body);
+    console.log("File exists:", !!req.file);
+    console.log("File:", req.file);
+    console.log("==================================");
 
     await hero.save();
 
     return res.status(200).json({
       success: true,
-      message: 'Hero content updated successfully',
+      message: "Hero content updated successfully",
       data: { hero },
     });
   } catch (error) {
-    console.error('Hero update error:', error);
+    console.error("Hero update error:", error);
     return res.status(500).json({
       success: false,
-      message: 'Failed to update hero content',
-      errors: [error.message || 'Unknown error'],
+      message: "Failed to update hero content",
+      errors: [error.message || "Unknown error"],
     });
   }
 };
