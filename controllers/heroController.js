@@ -52,6 +52,11 @@ const updateHero = async (req, res) => {
       data: { hero },
     });
   } catch (error) {
+    console.log("========== HERO REQUEST ==========");
+    console.log("Body:", req.body);
+    console.log("File exists:", !!req.file);
+    console.log("File:", req.file);
+    console.log("==================================");
     console.error("Hero update error:", error);
     return res.status(500).json({
       success: false,

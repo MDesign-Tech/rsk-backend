@@ -38,24 +38,6 @@ const deleteFromCloudinary = async (publicId) => {
   }
 };
 
-/**
- * Reusable helper that handles the full image-update lifecycle for a document.
- *
- * Behaviour:
- *  - If no file is provided, returns null and leaves the document's image fields untouched.
- *  - If a file is provided:
- *      1. Uploads the new image to Cloudinary (throws on failure -> caller returns error,
- *         no partial DB update happens).
- *      2. Deletes the previous Cloudinary image (if any).
- *      3. Updates the document's `image` / `imagePublicId` fields in memory (does NOT save).
- *  - If the caller's subsequent DB save fails, it attempts to delete the newly uploaded
- *    Cloudinary image to avoid orphaned files, then rethrows.
- *
- * @param {object} doc            Mongoose document (must have `image` and `imagePublicId`).
- * @param {object} file           The uploaded file (multer `req.file`) or undefined/null.
- * @param {string} folder        Cloudinary folder, e.g. 'rsk/hero'.
- * @returns {Promise<{secure_url:string, public_id:string}|null>}
- */
 const handleImageUpdate = async (doc, file, folder) => {
   if (!file) {
     return null;
