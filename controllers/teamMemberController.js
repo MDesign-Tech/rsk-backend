@@ -1,5 +1,6 @@
 const TeamMember = require('../models/TeamMember');
-const { upload, deleteFile } = require('../middleware/upload');
+const { upload } = require('../middleware/upload');
+const { uploadToCloudinary, deleteFromCloudinary } = require('../src/utils/cloudinaryUpload');
 
 const getTeamMembers = async (req, res) => {
   const { visible } = req.query;
@@ -72,8 +73,8 @@ const deleteTeamMember = async (req, res) => {
     });
   }
 
-  if (teamMember.image) {
-    deleteFile(teamMember.image);
+  if (teamMember.imagePublicId) {
+    await deleteFromCloudinary(teamMember.imagePublicId);
   }
 
   await teamMember.deleteOne();
@@ -96,11 +97,14 @@ const uploadTeamMemberImage = async (req, res) => {
     });
   }
 
-  if (teamMember.image) {
-    deleteFile(teamMember.image);
+  if (teamMember.imagePublicId) {
+    await deleteFromCloudinary(teamMember.imagePublicId);
   }
 
-  teamMember.image = `/uploads/${req.file.filename}`;
+  const result = await uploadToCloudinary(req.file.buffer, 'rsk/team');
+
+  teamMember.image = result.secure_url;
+  teamMember.imagePublicId = result.public_id;
   await teamMember.save();
 
   return res.status(200).json({

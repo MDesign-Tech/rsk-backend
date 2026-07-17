@@ -11,6 +11,10 @@ const partnerSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    imagePublicId: {
+      type: String,
+      default: null,
+    },
     visible: {
       type: Boolean,
       default: true,

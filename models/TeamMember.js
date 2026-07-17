@@ -11,6 +11,10 @@ const teamMemberSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    imagePublicId: {
+      type: String,
+      default: null,
+    },
     title: {
       type: String,
       required: [true, 'Title is required'],

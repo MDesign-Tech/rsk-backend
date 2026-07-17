@@ -28,6 +28,10 @@ const heroContentSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    bgImagePublicId: {
+      type: String,
+      default: null,
+    },
   },
   {
     timestamps: true,

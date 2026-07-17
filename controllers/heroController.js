@@ -1,5 +1,6 @@
 const HeroContent = require('../models/HeroContent');
-const { upload, deleteFile } = require('../middleware/upload');
+const { upload } = require('../middleware/upload');
+const { uploadToCloudinary, deleteFromCloudinary } = require('../src/utils/cloudinaryUpload');
 
 const getHero = async (req, res) => {
   const hero = await HeroContent.findOne();
@@ -47,11 +48,14 @@ const uploadHeroImage = async (req, res) => {
     });
   }
 
-  if (hero.bgImage) {
-    deleteFile(hero.bgImage);
+  if (hero.bgImagePublicId) {
+    await deleteFromCloudinary(hero.bgImagePublicId);
   }
 
-  hero.bgImage = `/uploads/${req.file.filename}`;
+  const result = await uploadToCloudinary(req.file.buffer, 'rsk/hero');
+
+  hero.bgImage = result.secure_url;
+  hero.bgImagePublicId = result.public_id;
   await hero.save();
 
   return res.status(200).json({

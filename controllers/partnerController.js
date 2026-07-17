@@ -1,5 +1,6 @@
 const Partner = require('../models/Partner');
-const { upload, deleteFile } = require('../middleware/upload');
+const { upload } = require('../middleware/upload');
+const { uploadToCloudinary, deleteFromCloudinary } = require('../src/utils/cloudinaryUpload');
 
 
 const getPartners = async (req, res) => {
@@ -79,8 +80,8 @@ const deletePartner = async (req, res) => {
     });
   }
 
-  if (partner.image) {
-    deleteFile(partner.image);
+  if (partner.imagePublicId) {
+    await deleteFromCloudinary(partner.imagePublicId);
   }
 
   await partner.deleteOne();
@@ -104,11 +105,14 @@ const uploadPartnerImage = async (req, res) => {
     });
   }
 
-  if (partner.image) {
-    deleteFile(partner.image);
+  if (partner.imagePublicId) {
+    await deleteFromCloudinary(partner.imagePublicId);
   }
 
-  partner.image = `/uploads/${req.file.filename}`;
+  const result = await uploadToCloudinary(req.file.buffer, 'rsk/partners');
+
+  partner.image = result.secure_url;
+  partner.imagePublicId = result.public_id;
   await partner.save();
 
   return res.status(200).json({
