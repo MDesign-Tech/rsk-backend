@@ -80,17 +80,25 @@ const deletePartner = async (req, res) => {
     });
   }
 
-  if (partner.imagePublicId) {
-    await deleteFromCloudinary(partner.imagePublicId);
+  try {
+    if (partner.imagePublicId) {
+      await deleteFromCloudinary(partner.imagePublicId);
+    }
+
+    await partner.deleteOne();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Partner deleted successfully',
+      data: {},
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to delete partner image from Cloudinary',
+      errors: [error.message],
+    });
   }
-
-  await partner.deleteOne();
-
-  return res.status(200).json({
-    success: true,
-    message: 'Partner deleted successfully',
-    data: {},
-  });
 };
 
 
@@ -105,21 +113,29 @@ const uploadPartnerImage = async (req, res) => {
     });
   }
 
-  if (partner.imagePublicId) {
-    await deleteFromCloudinary(partner.imagePublicId);
+  try {
+    if (partner.imagePublicId) {
+      await deleteFromCloudinary(partner.imagePublicId);
+    }
+
+    const result = await uploadToCloudinary(req.file.buffer, 'rsk/partners');
+
+    partner.image = result.secure_url;
+    partner.imagePublicId = result.public_id;
+    await partner.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Image uploaded successfully',
+      data: { partner },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to upload image to Cloudinary',
+      errors: [error.message],
+    });
   }
-
-  const result = await uploadToCloudinary(req.file.buffer, 'rsk/partners');
-
-  partner.image = result.secure_url;
-  partner.imagePublicId = result.public_id;
-  await partner.save();
-
-  return res.status(200).json({
-    success: true,
-    message: 'Image uploaded successfully',
-    data: { partner },
-  });
 };
 
 

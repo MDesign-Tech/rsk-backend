@@ -48,21 +48,29 @@ const uploadHeroImage = async (req, res) => {
     });
   }
 
-  if (hero.bgImagePublicId) {
-    await deleteFromCloudinary(hero.bgImagePublicId);
+  try {
+    if (hero.bgImagePublicId) {
+      await deleteFromCloudinary(hero.bgImagePublicId);
+    }
+
+    const result = await uploadToCloudinary(req.file.buffer, 'rsk/hero');
+
+    hero.bgImage = result.secure_url;
+    hero.bgImagePublicId = result.public_id;
+    await hero.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Hero image uploaded successfully',
+      data: { hero },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to upload image to Cloudinary',
+      errors: [error.message],
+    });
   }
-
-  const result = await uploadToCloudinary(req.file.buffer, 'rsk/hero');
-
-  hero.bgImage = result.secure_url;
-  hero.bgImagePublicId = result.public_id;
-  await hero.save();
-
-  return res.status(200).json({
-    success: true,
-    message: 'Hero image uploaded successfully',
-    data: { hero },
-  });
 };
 
 module.exports = {

@@ -9,7 +9,8 @@ const uploadToCloudinary = (buffer, folder = 'rsk') => {
       },
       (error, result) => {
         if (error) {
-          return reject(error);
+          const errMessage = error && error.message ? error.message : JSON.stringify(error);
+          return reject(new Error(errMessage));
         }
         resolve({
           secure_url: result.secure_url,
@@ -17,6 +18,11 @@ const uploadToCloudinary = (buffer, folder = 'rsk') => {
         });
       }
     );
+
+    stream.on('error', (err) => {
+      const errMessage = err && err.message ? err.message : JSON.stringify(err);
+      reject(new Error(errMessage));
+    });
 
     stream.end(buffer);
   });
@@ -27,7 +33,8 @@ const deleteFromCloudinary = async (publicId) => {
   try {
     await cloudinary.uploader.destroy(publicId);
   } catch (error) {
-    console.error('Error deleting image from Cloudinary:', error);
+    const errMessage = error && error.message ? error.message : JSON.stringify(error);
+    console.error('Error deleting image from Cloudinary:', errMessage);
   }
 };
 

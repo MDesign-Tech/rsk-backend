@@ -73,17 +73,25 @@ const deleteTeamMember = async (req, res) => {
     });
   }
 
-  if (teamMember.imagePublicId) {
-    await deleteFromCloudinary(teamMember.imagePublicId);
+  try {
+    if (teamMember.imagePublicId) {
+      await deleteFromCloudinary(teamMember.imagePublicId);
+    }
+
+    await teamMember.deleteOne();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Team member deleted successfully',
+      data: {},
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to delete team member image from Cloudinary',
+      errors: [error.message],
+    });
   }
-
-  await teamMember.deleteOne();
-
-  return res.status(200).json({
-    success: true,
-    message: 'Team member deleted successfully',
-    data: {},
-  });
 };
 
 const uploadTeamMemberImage = async (req, res) => {
@@ -97,21 +105,29 @@ const uploadTeamMemberImage = async (req, res) => {
     });
   }
 
-  if (teamMember.imagePublicId) {
-    await deleteFromCloudinary(teamMember.imagePublicId);
+  try {
+    if (teamMember.imagePublicId) {
+      await deleteFromCloudinary(teamMember.imagePublicId);
+    }
+
+    const result = await uploadToCloudinary(req.file.buffer, 'rsk/team');
+
+    teamMember.image = result.secure_url;
+    teamMember.imagePublicId = result.public_id;
+    await teamMember.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Image uploaded successfully',
+      data: { teamMember },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to upload image to Cloudinary',
+      errors: [error.message],
+    });
   }
-
-  const result = await uploadToCloudinary(req.file.buffer, 'rsk/team');
-
-  teamMember.image = result.secure_url;
-  teamMember.imagePublicId = result.public_id;
-  await teamMember.save();
-
-  return res.status(200).json({
-    success: true,
-    message: 'Image uploaded successfully',
-    data: { teamMember },
-  });
 };
 
 const toggleTeamMemberVisibility = async (req, res) => {

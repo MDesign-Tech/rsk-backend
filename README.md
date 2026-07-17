@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # RSK Associates - Backend API
 
 A lightweight REST API backend for RSK Associates corporate company website CMS.
@@ -12,7 +11,8 @@ A lightweight REST API backend for RSK Associates corporate company website CMS.
 - JWT Authentication
 - HttpOnly Cookies
 - bcrypt
-- Multer (local file storage)
+- Multer (memory storage)
+- Cloudinary
 - dotenv
 - cookie-parser
 - cors
@@ -30,6 +30,7 @@ A lightweight REST API backend for RSK Associates corporate company website CMS.
 ├── app.js
 ├── server.js
 ├── config/
+│   ├── cloudinary.js
 │   └── db.js
 ├── controllers/
 │   ├── authController.js
@@ -66,6 +67,10 @@ A lightweight REST API backend for RSK Associates corporate company website CMS.
 │   ├── faqRoutes.js
 │   ├── teamRoutes.js
 │   └── contactRoutes.js
+├── src/
+│   └── utils/
+│       ├── cloudinaryUpload.js
+│       └── seed.js
 ├── validators/
 │   ├── authValidator.js
 │   ├── userValidator.js
@@ -77,11 +82,6 @@ A lightweight REST API backend for RSK Associates corporate company website CMS.
 │   ├── faqValidator.js
 │   ├── teamValidator.js
 │   └── contactValidator.js
-├── src/
-│   └── utils/
-│       └── seed.js
-├── uploads/
-│   └── .gitkeep
 └── public/
 ```
 
@@ -89,9 +89,9 @@ A lightweight REST API backend for RSK Associates corporate company website CMS.
 
 1. Clone the repository
 2. Install dependencies:
-   ```bash
-   npm install
-   ```
+    ```bash
+    npm install
+    ```
 3. Copy `.env.example` to `.env` and configure your environment variables
 4. Make sure MongoDB is running
 
@@ -106,6 +106,11 @@ MONGODB_URI=mongodb://localhost:27017/rsk-associates
 JWT_SECRET=your_jwt_secret_key_here_change_in_production
 JWT_EXPIRE=7d
 COOKIE_EXPIRE=7
+
+# Cloudinary Configuration
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
 ```
 
 ## Running the Project
@@ -194,29 +199,17 @@ Default credentials:
 - `GET /api/contact/:id` - Get single message (Admin only)
 - `DELETE /api/contact/:id` - Delete message (Admin only)
 
-## Authentication
-
-All management endpoints are protected. Use the login endpoint to get an access token stored in an HttpOnly cookie.
-
-### Login
-```bash
-POST /api/auth/login
-Content-Type: application/json
-
-{
-  "email": "admin@rskassociates.com",
-  "password": "Admin123!"
-}
-```
-
 ## Uploads
 
-Images are stored locally in the `/uploads` directory. Uploaded files are served statically at `/uploads/:filename`.
+Images are uploaded to Cloudinary via the backend. The API returns full Cloudinary URLs.
 
 Supported formats: JPEG, JPG, PNG, WEBP
 Maximum file size: 5MB
 
-Only hero background image and team member image uploads are supported.
+Upload endpoints:
+- `POST /api/hero/upload` - Upload hero background image
+- `POST /api/partners/:id/upload` - Upload partner logo
+- `POST /api/team/:id/upload` - Upload team member photo
 
 ## API Responses
 
@@ -249,6 +242,3 @@ Only hero background image and team member image uploads are supported.
 ## License
 
 ISC
-=======
-# rsk-backend
->>>>>>> 5fa3ad39fe1b025fa6b77e1b0e07ea44a0fecbc2
