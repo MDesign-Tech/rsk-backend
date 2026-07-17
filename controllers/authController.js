@@ -1,13 +1,13 @@
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcrypt");
-const User = require("../models/User");
-const PasswordReset = require("../models/PasswordReset");
-const AboutUs = require("../models/AboutUs");
-const { sendOTPEmail } = require("../src/utils/emailService");
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+const User = require('../models/User');
+const PasswordReset = require('../models/PasswordReset');
+const AboutUs = require('../models/AboutUs');
+const { sendOTPEmail } = require('../src/utils/emailService');
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRE || "7d",
+    expiresIn: process.env.JWT_EXPIRE || '7d',
   });
 };
 
@@ -22,18 +22,14 @@ const getCompanyInfo = async () => {
       return {};
     }
 
-    const emailContact = about.contactMethods.find((c) => c.label === "Email");
-    const phoneContact = about.contactMethods.find((c) => c.label === "Phone");
-    const locationContact = about.contactMethods.find(
-      (c) => c.label === "Location",
-    );
+    const emailContact = about.contactMethods.find((c) => c.label === 'Email');
+    const phoneContact = about.contactMethods.find((c) => c.label === 'Phone');
+    const locationContact = about.contactMethods.find((c) => c.label === 'Location');
 
     return {
-      companyName: about.title || "RSK Associates",
-      companyAddress: locationContact
-        ? locationContact.value
-        : "KIMIRONKO, KG 11 Ave, Kigali",
-      companyPhone: phoneContact ? phoneContact.value : "+250 788 492 529",
+      companyName: about.title || 'RSK Associates',
+      companyAddress: locationContact ? locationContact.value : 'KIMIRONKO, KG 11 Ave, Kigali',
+      companyPhone: phoneContact ? phoneContact.value : '+250 788 492 529',
     };
   } catch (error) {
     return {};
@@ -43,33 +39,28 @@ const getCompanyInfo = async () => {
 const login = async (req, res) => {
   const { email, password } = req.body;
 
-  const user = await User.findOne({ email }).select("+password");
+  const user = await User.findOne({ email }).select('+password');
 
   if (!user || !(await user.matchPassword(password))) {
     return res.status(401).json({
       success: false,
-      message: "Invalid credentials",
-      errors: ["Email or password is incorrect"],
+      message: 'Invalid credentials',
+      errors: ['Email or password is incorrect'],
     });
   }
 
   const token = generateToken(user._id);
 
-  // 1. Determine environment
-  const isProduction = process.env.NODE_ENV === "production";
-
-  // 2. Set the cookie with hardened security options
-  res.cookie("token", token, {
-    httpOnly: true, // Prevents XSS attacks from reading the token
-    secure: isProduction, // True in prod (requires HTTPS), false in dev (allows HTTP)
-    sameSite: isProduction ? "strict" : "lax", // 'strict' or 'lax' protects against CSRF attacks
-    maxAge: parseInt(process.env.COOKIE_EXPIRE || "7") * 24 * 60 * 60 * 1000,
-    path: "/", // Available across your entire application domain
+  res.cookie('token', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    maxAge: parseInt(process.env.COOKIE_EXPIRE || 7) * 24 * 60 * 60 * 1000,
   });
 
   return res.status(200).json({
     success: true,
-    message: "Login successful",
+    message: 'Login successful',
     data: {
       user: {
         _id: user._id,
@@ -83,15 +74,15 @@ const login = async (req, res) => {
 };
 
 const logout = (req, res) => {
-  res.clearCookie("token", {
+  res.clearCookie('token', {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
   });
 
   return res.status(200).json({
     success: true,
-    message: "Logout successful",
+    message: 'Logout successful',
     data: {},
   });
 };
@@ -99,7 +90,7 @@ const logout = (req, res) => {
 const getMe = async (req, res) => {
   return res.status(200).json({
     success: true,
-    message: "User retrieved successfully",
+    message: 'User retrieved successfully',
     data: {
       user: req.user,
     },
@@ -114,8 +105,8 @@ const forgotPassword = async (req, res) => {
   if (!user) {
     return res.status(404).json({
       success: false,
-      message: "User not found",
-      errors: ["No account exists with this email address"],
+      message: 'User not found',
+      errors: ['No account exists with this email address'],
     });
   }
 
@@ -135,20 +126,20 @@ const forgotPassword = async (req, res) => {
   try {
     await sendOTPEmail(email, otp, companyInfo);
   } catch (error) {
-    console.error("Error sending OTP email:", error);
+    console.error('Error sending OTP email:', error);
     return res.status(500).json({
       success: false,
-      message: "Failed to send OTP email",
-      errors: ["Please try again later"],
+      message: 'Failed to send OTP email',
+      errors: ['Please try again later'],
     });
   }
 
   return res.status(200).json({
     success: true,
-    message: "OTP sent to your email",
+    message: 'OTP sent to your email',
     data: {
       email,
-      expiresIn: "10 minutes",
+      expiresIn: '10 minutes',
     },
   });
 };
@@ -161,18 +152,16 @@ const verifyOTP = async (req, res) => {
   if (!resetRecord) {
     return res.status(400).json({
       success: false,
-      message: "Invalid OTP",
-      errors: [
-        "No OTP request found for this email. Please request a new OTP.",
-      ],
+      message: 'Invalid OTP',
+      errors: ['No OTP request found for this email. Please request a new OTP.'],
     });
   }
 
   if (resetRecord.isVerified) {
     return res.status(400).json({
       success: false,
-      message: "OTP already used",
-      errors: ["This OTP has already been verified. Please request a new one."],
+      message: 'OTP already used',
+      errors: ['This OTP has already been verified. Please request a new one.'],
     });
   }
 
@@ -180,8 +169,8 @@ const verifyOTP = async (req, res) => {
     await PasswordReset.deleteMany({ email });
     return res.status(400).json({
       success: false,
-      message: "OTP expired",
-      errors: ["This OTP has expired. Please request a new one."],
+      message: 'OTP expired',
+      errors: ['This OTP has expired. Please request a new one.'],
     });
   }
 
@@ -190,8 +179,8 @@ const verifyOTP = async (req, res) => {
   if (!isOTPValid) {
     return res.status(400).json({
       success: false,
-      message: "Invalid OTP",
-      errors: ["The OTP you entered is incorrect. Please try again."],
+      message: 'Invalid OTP',
+      errors: ['The OTP you entered is incorrect. Please try again.'],
     });
   }
 
@@ -200,7 +189,7 @@ const verifyOTP = async (req, res) => {
 
   return res.status(200).json({
     success: true,
-    message: "OTP verified successfully",
+    message: 'OTP verified successfully',
     data: {
       email,
       verified: true,
@@ -216,8 +205,8 @@ const resendOTP = async (req, res) => {
   if (!user) {
     return res.status(404).json({
       success: false,
-      message: "User not found",
-      errors: ["No account exists with this email address"],
+      message: 'User not found',
+      errors: ['No account exists with this email address'],
     });
   }
 
@@ -237,20 +226,20 @@ const resendOTP = async (req, res) => {
   try {
     await sendOTPEmail(email, otp, companyInfo);
   } catch (error) {
-    console.error("Error sending OTP email:", error);
+    console.error('Error sending OTP email:', error);
     return res.status(500).json({
       success: false,
-      message: "Failed to send OTP email",
-      errors: ["Please try again later"],
+      message: 'Failed to send OTP email',
+      errors: ['Please try again later'],
     });
   }
 
   return res.status(200).json({
     success: true,
-    message: "New OTP sent to your email",
+    message: 'New OTP sent to your email',
     data: {
       email,
-      expiresIn: "10 minutes",
+      expiresIn: '10 minutes',
     },
   });
 };
@@ -263,18 +252,16 @@ const resetPassword = async (req, res) => {
   if (!resetRecord) {
     return res.status(400).json({
       success: false,
-      message: "Invalid request",
-      errors: [
-        "No OTP request found for this email. Please request a new OTP.",
-      ],
+      message: 'Invalid request',
+      errors: ['No OTP request found for this email. Please request a new OTP.'],
     });
   }
 
   if (!resetRecord.isVerified) {
     return res.status(400).json({
       success: false,
-      message: "OTP not verified",
-      errors: ["Please verify your OTP before resetting your password."],
+      message: 'OTP not verified',
+      errors: ['Please verify your OTP before resetting your password.'],
     });
   }
 
@@ -282,8 +269,8 @@ const resetPassword = async (req, res) => {
     await PasswordReset.deleteMany({ email });
     return res.status(400).json({
       success: false,
-      message: "OTP expired",
-      errors: ["This OTP has expired. Please request a new one."],
+      message: 'OTP expired',
+      errors: ['This OTP has expired. Please request a new one.'],
     });
   }
 
@@ -292,8 +279,8 @@ const resetPassword = async (req, res) => {
   if (!isOTPValid) {
     return res.status(400).json({
       success: false,
-      message: "Invalid OTP",
-      errors: ["The OTP you entered is incorrect. Please try again."],
+      message: 'Invalid OTP',
+      errors: ['The OTP you entered is incorrect. Please try again.'],
     });
   }
 
@@ -302,8 +289,8 @@ const resetPassword = async (req, res) => {
   if (!user) {
     return res.status(404).json({
       success: false,
-      message: "User not found",
-      errors: ["No account exists with this email address"],
+      message: 'User not found',
+      errors: ['No account exists with this email address'],
     });
   }
 
@@ -314,7 +301,7 @@ const resetPassword = async (req, res) => {
 
   return res.status(200).json({
     success: true,
-    message: "Password reset successfully",
+    message: 'Password reset successfully',
     data: {},
   });
 };
