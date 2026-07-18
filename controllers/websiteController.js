@@ -5,6 +5,30 @@ const Service = require("../models/Service");
 const Partner = require("../models/Partner");
 const FAQ = require("../models/FAQ");
 const TeamMember = require("../models/TeamMember");
+const TeamSection = require("../models/TeamSection");
+
+// Keep only the visible social media platforms.
+const filterSocialMedia = (socialMedia) => {
+  if (!socialMedia) return socialMedia;
+  const filtered = {};
+  for (const [platform, value] of Object.entries(socialMedia)) {
+    if (value && value.visible !== false) {
+      filtered[platform] = value;
+    }
+  }
+  return filtered;
+};
+
+// Strip hidden sub-items (stats, contactMethods) and hidden social platforms
+// from the About document so the frontend never receives invisible data.
+const filterAbout = (about) => {
+  if (!about) return about;
+  const doc = about.toObject ? about.toObject() : { ...about };
+  doc.stats = (doc.stats || []).filter((s) => s.visible !== false);
+  doc.contactMethods = (doc.contactMethods || []).filter((c) => c.visible !== false);
+  doc.socialMedia = filterSocialMedia(doc.socialMedia);
+  return doc;
+};
 
 exports.getWebsiteContent = async (req, res, next) => {
   try {
@@ -13,22 +37,39 @@ exports.getWebsiteContent = async (req, res, next) => {
     const hero = await Hero.findOne();
     console.log("Hero fetched:", !!hero);
 
-    const about = await About.findOne();
-    console.log("About fetched:", !!about);
+    const rawAbout = await About.findOne();
+    const about = filterAbout(rawAbout);
+    console.log("About fetched:", !!rawAbout);
 
-    const missionVision = await MissionVision.findOne();
+    // MissionVision is a single document; only return it when visible.
+    const missionVisionDoc = await MissionVision.findOne();
+    const missionVision =
+      missionVisionDoc && missionVisionDoc.visible !== false ? missionVisionDoc : null;
     console.log("MissionVision fetched:", !!missionVision);
 
-    const services = await Service.find();
+    // Only visible items are served to the public website.
+    const services = await Service.find({ visible: { $ne: false } });
     console.log("Services fetched count:", services.length);
 
-    const partners = await Partner.find();
+    const partners = await Partner.find({ visible: { $ne: false } });
     console.log("Partners fetched count:", partners.length);
 
-    const faqs = await FAQ.find();
+    const faqs = await FAQ.find({ visible: { $ne: false } });
     console.log("FAQs fetched count:", faqs.length);
 
-    const teamMembers = await TeamMember.find();
+    // Team: only visible members that belong to visible sections.
+    const visibleSections = await TeamSection.find({ visible: { $ne: false } });
+    const visibleSectionIds = visibleSections.map((s) => s._id);
+    const rawTeamMembers = await TeamMember.find({
+      visible: { $ne: false },
+      section: { $in: visibleSectionIds },
+    });
+    // Strip hidden social media platforms from each member.
+    const teamMembers = rawTeamMembers.map((member) => {
+      const doc = member.toObject ? member.toObject() : { ...member };
+      doc.socialMedia = filterSocialMedia(doc.socialMedia);
+      return doc;
+    });
     console.log("TeamMembers fetched count:", teamMembers.length);
 
     console.log("All queries completed successfully");

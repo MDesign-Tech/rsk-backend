@@ -1,21 +1,68 @@
 const TeamMember = require('../models/TeamMember');
+const TeamSection = require('../models/TeamSection');
 const { upload } = require('../middleware/upload');
 const { handleImageUpdate, deleteFromCloudinary } = require('../src/utils/cloudinaryUpload');
 
 const getTeamMembers = async (req, res) => {
-  const { visible } = req.query;
-  const filter = visible !== undefined ? { visible: visible === 'true' } : {};
+  const teamMembers = await TeamMember.find()
+    .populate('section')
+    .sort({ createdAt: 1 });
 
-  const teamMembers = await TeamMember.find(filter);
+  const sections = await TeamSection.find().sort({ order: 1 });
+
+  const grouped = sections.map((section) => ({
+    section: {
+      _id: section._id,
+      name: section.name,
+      description: section.description,
+      order: section.order,
+      visible: section.visible,
+    },
+    members: teamMembers.filter(
+      (member) => member.section && member.section._id.toString() === section._id.toString()
+    ),
+  }));
+
   return res.status(200).json({
     success: true,
     message: 'Team members retrieved successfully',
-    data: { teamMembers },
+    data: { team: grouped },
+  });
+};
+
+const getPublicTeam = async (req, res) => {
+  const sections = await TeamSection.find({ visible: true }).sort({ order: 1 });
+
+  const sectionIds = sections.map((s) => s._id);
+  const teamMembers = await TeamMember.find({
+    visible: true,
+    section: { $in: sectionIds },
+  })
+    .populate('section')
+    .sort({ createdAt: 1 });
+
+  const grouped = sections.map((section) => ({
+    section: {
+      _id: section._id,
+      name: section.name,
+      description: section.description,
+      order: section.order,
+      visible: section.visible,
+    },
+    members: teamMembers.filter(
+      (member) => member.section && member.section._id.toString() === section._id.toString()
+    ),
+  }));
+
+  return res.status(200).json({
+    success: true,
+    message: 'Team members retrieved successfully',
+    data: { team: grouped },
   });
 };
 
 const getTeamMember = async (req, res) => {
-  const teamMember = await TeamMember.findById(req.params.id);
+  const teamMember = await TeamMember.findById(req.params.id).populate('section');
 
   if (!teamMember) {
     return res.status(404).json({
@@ -32,19 +79,44 @@ const getTeamMember = async (req, res) => {
   });
 };
 
-const createTeamMember = async (req, res) => {
-  const teamMember = await TeamMember.create(req.body);
-  return res.status(201).json({
-    success: true,
-    message: 'Team member created successfully',
-    data: { teamMember },
-  });
+// When the request is multipart/form-data, nested objects (e.g. socialMedia)
+// arrive as JSON strings. Parse them so they can be assigned to sub-documents.
+const parseJsonFields = (body) => {
+  if (body && typeof body.socialMedia === 'string') {
+    try {
+      body.socialMedia = JSON.parse(body.socialMedia);
+    } catch (err) {
+      // Leave as-is; mongoose will surface a clear validation error if invalid.
+    }
+  }
+  return body;
 };
 
-// PUT /team/:id
-// Accepts multipart/form-data. Updates text fields and, when an image file is
-// present, uploads it to Cloudinary (replacing the previous image) in the same
-// atomic request. If no image is sent, only the text fields are updated.
+const createTeamMember = async (req, res) => {
+  try {
+    const teamMember = new TeamMember(parseJsonFields(req.body));
+
+    // Upload image to Cloudinary if one was provided (multipart/form-data).
+    await handleImageUpdate(teamMember, req.file, 'rsk/team');
+
+    await teamMember.save();
+    await teamMember.populate('section');
+
+    return res.status(201).json({
+      success: true,
+      message: 'Team member created successfully',
+      data: { teamMember },
+    });
+  } catch (error) {
+    console.error('Team member create error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to create team member',
+      errors: [error.message || 'Unknown error'],
+    });
+  }
+};
+
 const updateTeamMember = async (req, res) => {
   const teamMember = await TeamMember.findById(req.params.id);
 
@@ -57,11 +129,12 @@ const updateTeamMember = async (req, res) => {
   }
 
   try {
-    Object.assign(teamMember, req.body);
+    Object.assign(teamMember, parseJsonFields(req.body));
 
     await handleImageUpdate(teamMember, req.file, 'rsk/team');
 
     await teamMember.save();
+    await teamMember.populate('section');
 
     return res.status(200).json({
       success: true,
@@ -124,6 +197,7 @@ const toggleTeamMemberVisibility = async (req, res) => {
 
   teamMember.visible = req.body.visible;
   await teamMember.save();
+  await teamMember.populate('section');
 
   return res.status(200).json({
     success: true,
@@ -134,6 +208,7 @@ const toggleTeamMemberVisibility = async (req, res) => {
 
 module.exports = {
   getTeamMembers,
+  getPublicTeam,
   getTeamMember,
   createTeamMember,
   updateTeamMember,

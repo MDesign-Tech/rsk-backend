@@ -2,6 +2,7 @@ const express = require('express');
 const { body } = require('express-validator');
 const {
   getTeamMembers,
+  getPublicTeam,
   getTeamMember,
   createTeamMember,
   updateTeamMember,
@@ -15,11 +16,20 @@ const { multerErrorHandler } = require('../middleware/upload');
 
 const router = express.Router();
 
+router.get('/public', getPublicTeam);
+
+// Protected admin endpoints
 router.use(protect);
 
 router.get('/', getTeamMembers);
 router.get('/:id', getTeamMember);
-router.post('/', validateTeamMember, createTeamMember);
+router.post(
+  '/',
+  upload.single('image'),
+  multerErrorHandler,
+  validateTeamMember,
+  createTeamMember
+);
 // PUT /team/:id now handles both content and (optional) image updates.
 router.put(
   '/:id',

@@ -5,6 +5,7 @@ const MissionVision = require('./models/MissionVision');
 const Service = require('./models/Service');
 const HeroContent = require('./models/HeroContent');
 const Partner = require('./models/Partner');
+const TeamSection = require('./models/TeamSection');
 
 const DEFAULT_ABOUT = {
   title: "About RSK Associates",
@@ -172,6 +173,21 @@ const DEFAULT_SERVICES = [
   },
 ];
 
+const DEFAULT_TEAM_SECTIONS = [
+  {
+    name: "Board of Directors",
+    order: 1,
+  },
+  {
+    name: "Accountants",
+    order: 2,
+  },
+  {
+    name: "Tax Consultants",
+    order: 3,
+  },
+];
+
 const seedData = async () => {
   try {
     const adminExists = await User.findOne({ email: 'admin@rskassociates.com' });
@@ -237,6 +253,16 @@ const seedData = async () => {
       console.log('Default partner data created successfully');
     } else {
       console.log('Partner data already exists');
+    }
+
+    for (const sectionData of DEFAULT_TEAM_SECTIONS) {
+      const sectionExists = await TeamSection.findOne({ name: sectionData.name });
+      if (!sectionExists) {
+        await TeamSection.create(sectionData);
+        console.log(`Default team section "${sectionData.name}" created successfully`);
+      } else {
+        console.log(`Team section "${sectionData.name}" already exists`);
+      }
     }
 
     console.log('All seeds completed successfully');

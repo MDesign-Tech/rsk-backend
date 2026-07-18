@@ -15,6 +15,7 @@ const missionVisionRoutes = require('./routes/missionVisionRoutes');
 const partnerRoutes = require('./routes/partnerRoutes');
 const faqRoutes = require('./routes/faqRoutes');
 const teamRoutes = require('./routes/teamMemberRoutes');
+const teamSectionRoutes = require('./routes/teamSectionRoutes');
 const contactRoutes = require('./routes/contactRoutes');
 const websiteRoute = require('./routes/website.routes')
 
@@ -66,6 +67,7 @@ app.use('/api/mission-vision', missionVisionRoutes);
 app.use('/api/partners', partnerRoutes);
 app.use('/api/faqs', faqRoutes);
 app.use('/api/team', teamRoutes);
+app.use('/api/team-sections', teamSectionRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/website', websiteRoute)
 

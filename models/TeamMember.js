@@ -4,7 +4,6 @@ const teamMemberSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: [true, 'Name is required'],
       trim: true,
     },
     image: {
@@ -17,12 +16,77 @@ const teamMemberSchema = new mongoose.Schema(
     },
     title: {
       type: String,
-      required: [true, 'Title is required'],
       trim: true,
     },
     bio: {
       type: String,
       trim: true,
+    },
+    section: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'TeamSection',
+    },
+    socialMedia: {
+      facebook: {
+        href: {
+          type: String,
+          default: null,
+        },
+        visible: {
+          type: Boolean,
+          default: true,
+        },
+      },
+      instagram: {
+        href: {
+          type: String,
+          default: null,
+        },
+        visible: {
+          type: Boolean,
+          default: true,
+        },
+      },
+      whatsapp: {
+        href: {
+          type: String,
+          default: null,
+        },
+        visible: {
+          type: Boolean,
+          default: true,
+        },
+      },
+      x: {
+        href: {
+          type: String,
+          default: null,
+        },
+        visible: {
+          type: Boolean,
+          default: true,
+        },
+      },
+      linkedin: {
+        href: {
+          type: String,
+          default: null,
+        },
+        visible: {
+          type: Boolean,
+          default: true,
+        },
+      },
+      youtube: {
+        href: {
+          type: String,
+          default: null,
+        },
+        visible: {
+          type: Boolean,
+          default: true,
+        },
+      },
     },
     visible: {
       type: Boolean,

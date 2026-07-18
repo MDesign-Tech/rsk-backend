@@ -12,6 +12,9 @@ const validateTeamMember = [
   body('bio')
     .optional()
     .trim(),
+  body('section')
+    .notEmpty().withMessage('Section is required')
+    .isMongoId().withMessage('Section must be a valid ID'),
 ];
 
 module.exports = { validateTeamMember };
