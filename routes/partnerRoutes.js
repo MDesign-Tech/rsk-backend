@@ -19,7 +19,7 @@ router.use(protect);
 
 router.get('/', getPartners);
 router.get('/:id', getPartner);
-router.post('/', validatePartner, createPartner);
+router.post('/', upload.single('image'), multerErrorHandler, validatePartner, createPartner);
 // PUT /partners/:id now handles both content and (optional) image updates.
 router.put(
   '/:id',

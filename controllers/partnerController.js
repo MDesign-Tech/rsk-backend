@@ -37,13 +37,22 @@ const getPartner = async (req, res) => {
 
 
 const createPartner = async (req, res) => {
-  const partner = await Partner.create(req.body);
+  try {
+    const partner = await Partner.create(req.body);
 
-  return res.status(201).json({
-    success: true,
-    message: 'Partner created successfully',
-    data: { partner },
-  });
+    return res.status(201).json({
+      success: true,
+      message: 'Partner created successfully',
+      data: { partner },
+    });
+  } catch (error) {
+    console.error('Partner create error:', error);
+    return res.status(400).json({
+      success: false,
+      message: 'Failed to create partner',
+      errors: [error.message || 'Unknown error'],
+    });
+  }
 };
 
 
