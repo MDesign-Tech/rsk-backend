@@ -24,4 +24,24 @@ const validateHero = [
     .toBoolean(),
 ];
 
-module.exports = { validateHero };
+// Used for PATCH /api/hero/visibility/subtitle
+const validateSubtitleVisibility = [
+  body('subtitleVisible')
+    .exists().withMessage('subtitleVisible is required')
+    .isBoolean().withMessage('subtitleVisible must be a boolean')
+    .toBoolean(),
+];
+
+// Used for PATCH /api/hero/visibility/trust
+const validateTrustVisibility = [
+  body('trustVisible')
+    .exists().withMessage('trustVisible is required')
+    .isBoolean().withMessage('trustVisible must be a boolean')
+    .toBoolean(),
+];
+
+module.exports = {
+  validateHero,
+  validateSubtitleVisibility,
+  validateTrustVisibility,
+};
