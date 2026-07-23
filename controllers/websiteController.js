@@ -6,6 +6,8 @@ const Partner = require("../models/Partner");
 const FAQ = require("../models/FAQ");
 const TeamMember = require("../models/TeamMember");
 const TeamSection = require("../models/TeamSection");
+const WhyJoinUs = require("../models/WhyJoinUs");
+const WhyBecomeMember = require("../models/WhyBecomeMember");
 
 // Keep only the visible social media platforms.
 const filterSocialMedia = (socialMedia) => {
@@ -28,6 +30,14 @@ const filterAbout = (about) => {
   doc.contactMethods = (doc.contactMethods || []).filter((c) => c.visible !== false);
   doc.socialMedia = filterSocialMedia(doc.socialMedia);
   return doc;
+};
+
+// Filter hidden points from WhyJoinUs / WhyBecomeMember documents.
+const filterPoints = (doc) => {
+  if (!doc) return doc;
+  const d = doc.toObject ? doc.toObject() : { ...doc };
+  d.points = (d.points || []).filter((p) => p.visible !== false);
+  return d;
 };
 
 exports.getWebsiteContent = async (req, res, next) => {
@@ -72,6 +82,14 @@ exports.getWebsiteContent = async (req, res, next) => {
     });
     console.log("TeamMembers fetched count:", teamMembers.length);
 
+    const rawWhyJoinUs = await WhyJoinUs.findOne();
+    const whyJoinUs = filterPoints(rawWhyJoinUs);
+    console.log("WhyJoinUs fetched:", !!rawWhyJoinUs);
+
+    const rawWhyBecomeMember = await WhyBecomeMember.findOne();
+    const whyBecomeMember = filterPoints(rawWhyBecomeMember);
+    console.log("WhyBecomeMember fetched:", !!rawWhyBecomeMember);
+
     console.log("All queries completed successfully");
 
     res.json({
@@ -83,7 +101,9 @@ exports.getWebsiteContent = async (req, res, next) => {
         services,
         partners,
         faqs,
-        teamMembers
+        teamMembers,
+        whyJoinUs,
+        whyBecomeMember
       }
     });
   } catch (error) {

@@ -27,6 +27,14 @@ const whyJoinUsSchema = new mongoose.Schema(
           type: Boolean,
           default: true,
         },
+        image: {
+          type: String,
+          default: null,
+        },
+        imagePublicId: {
+          type: String,
+          default: null,
+        },
       },
     ],
     visible: {

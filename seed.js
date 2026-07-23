@@ -275,6 +275,7 @@ const DEFAULT_WHY_BECOME_MEMBER = {
       title: 'Networking',
       description:
         'Build lasting business relationships with senior decision makers.',
+      visible: true,
       image: null,
       imagePublicId: null,
     },
@@ -282,6 +283,7 @@ const DEFAULT_WHY_BECOME_MEMBER = {
       title: 'Training',
       description:
         'Exclusive workshops and executive learning sessions for members.',
+      visible: true,
       image: null,
       imagePublicId: null,
     },
@@ -289,6 +291,7 @@ const DEFAULT_WHY_BECOME_MEMBER = {
       title: 'Business Support',
       description:
         'Access advisory guidance and operational support when you need it most.',
+      visible: true,
       image: null,
       imagePublicId: null,
     },
@@ -296,6 +299,7 @@ const DEFAULT_WHY_BECOME_MEMBER = {
       title: 'Funding Opportunities',
       description:
         'Be first to know about grants, tenders, and capital introductions.',
+      visible: true,
       image: null,
       imagePublicId: null,
     },
@@ -303,6 +307,7 @@ const DEFAULT_WHY_BECOME_MEMBER = {
       title: 'Certifications',
       description:
         'Gain credibility through member-focused professional certifications.',
+      visible: true,
       image: null,
       imagePublicId: null,
     },
@@ -310,6 +315,7 @@ const DEFAULT_WHY_BECOME_MEMBER = {
       title: 'Mentorship',
       description:
         'Receive one-to-one mentorship from industry leaders and advisors.',
+      visible: true,
       image: null,
       imagePublicId: null,
     },

@@ -19,9 +19,27 @@ const validateWhyJoinUs = [
   body('points.*.visible')
     .optional()
     .isBoolean().withMessage('Point visible must be a boolean'),
+  body('points.*.image')
+    .optional()
+    .isURL().withMessage('Point image must be a valid URL'),
+  body('points.*.imagePublicId')
+    .optional()
+    .trim(),
   body('visible')
     .optional()
     .isBoolean().withMessage('Visible must be a boolean'),
 ];
 
-module.exports = { validateWhyJoinUs };
+const validateWhyJoinUsPoint = [
+  body('title')
+    .optional()
+    .trim(),
+  body('description')
+    .optional()
+    .trim(),
+  body('visible')
+    .optional()
+    .isBoolean().withMessage('Point visible must be a boolean'),
+];
+
+module.exports = { validateWhyJoinUs, validateWhyJoinUsPoint };

@@ -19,9 +19,33 @@ const validateWhyBecomeMember = [
   body('points.*.visible')
     .optional()
     .isBoolean().withMessage('Point visible must be a boolean'),
+  body('points.*.image')
+    .optional()
+    .isURL().withMessage('Point image must be a valid URL'),
+  body('points.*.imagePublicId')
+    .optional()
+    .trim(),
   body('visible')
     .optional()
     .isBoolean().withMessage('Visible must be a boolean'),
 ];
 
-module.exports = { validateWhyBecomeMember };
+const validateWhyBecomeMemberPoint = [
+  body('title')
+    .optional()
+    .trim(),
+  body('description')
+    .optional()
+    .trim(),
+  body('visible')
+    .optional()
+    .isBoolean().withMessage('Point visible must be a boolean'),
+  body('image')
+    .optional()
+    .isURL().withMessage('Point image must be a valid URL'),
+  body('imagePublicId')
+    .optional()
+    .trim(),
+];
+
+module.exports = { validateWhyBecomeMember, validateWhyBecomeMemberPoint };
