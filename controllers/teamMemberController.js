@@ -1,7 +1,5 @@
 const TeamMember = require('../models/TeamMember');
 const TeamSection = require('../models/TeamSection');
-const { upload } = require('../middleware/upload');
-const { handleImageUpdate, deleteFromCloudinary } = require('../src/utils/cloudinaryUpload');
 
 const getTeamMembers = async (req, res) => {
   const teamMembers = await TeamMember.find()
@@ -96,9 +94,6 @@ const createTeamMember = async (req, res) => {
   try {
     const teamMember = new TeamMember(parseJsonFields(req.body));
 
-    // Upload image to Cloudinary if one was provided (multipart/form-data).
-    await handleImageUpdate(teamMember, req.file, 'rsk/team');
-
     await teamMember.save();
     await teamMember.populate('section');
 
@@ -131,8 +126,6 @@ const updateTeamMember = async (req, res) => {
   try {
     Object.assign(teamMember, parseJsonFields(req.body));
 
-    await handleImageUpdate(teamMember, req.file, 'rsk/team');
-
     await teamMember.save();
     await teamMember.populate('section');
 
@@ -163,10 +156,6 @@ const deleteTeamMember = async (req, res) => {
   }
 
   try {
-    if (teamMember.imagePublicId) {
-      await deleteFromCloudinary(teamMember.imagePublicId);
-    }
-
     await teamMember.deleteOne();
 
     return res.status(200).json({
@@ -178,7 +167,7 @@ const deleteTeamMember = async (req, res) => {
     console.error('Team member delete error:', error);
     return res.status(500).json({
       success: false,
-      message: 'Failed to delete team member image from Cloudinary',
+      message: 'Failed to delete team member',
       errors: [error.message || 'Unknown error'],
     });
   }
@@ -214,5 +203,4 @@ module.exports = {
   updateTeamMember,
   deleteTeamMember,
   toggleTeamMemberVisibility,
-  upload, // exported for route-level multer wiring
 };

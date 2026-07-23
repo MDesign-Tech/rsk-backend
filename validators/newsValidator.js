@@ -1,7 +1,5 @@
 const { body } = require('express-validator');
 
-// Used for create. The image is uploaded as a multipart file (field name
-// "image"), so it is intentionally NOT validated as a body string here.
 const validateCreateNews = [
   body('title')
     .notEmpty().withMessage('Title is required')
@@ -26,6 +24,9 @@ const validateCreateNews = [
   body('readingTime')
     .optional()
     .isNumeric().withMessage('Reading time must be a number'),
+  body('image')
+    .notEmpty().withMessage('Image is required')
+    .isURL().withMessage('Image must be a valid URL'),
 ];
 
 // Used for update (partial). All fields optional.
@@ -57,6 +58,9 @@ const validateUpdateNews = [
   body('readingTime')
     .optional()
     .isNumeric().withMessage('Reading time must be a number'),
+  body('image')
+    .optional()
+    .isURL().withMessage('Image must be a valid URL'),
 ];
 
 const validateStatusToggle = [

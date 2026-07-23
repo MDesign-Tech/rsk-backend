@@ -14,6 +14,12 @@ const validateHero = [
   body('trust')
     .optional()
     .trim(),
+  body('image')
+    .optional()
+    .isURL().withMessage('Image must be a valid URL'),
+  body('imagePublicId')
+    .optional()
+    .trim(),
   body('subtitleVisible')
     .optional()
     .isBoolean().withMessage('subtitleVisible must be a boolean')

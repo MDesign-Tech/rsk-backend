@@ -11,8 +11,6 @@ A lightweight REST API backend for RSK Associates corporate company website CMS.
 - JWT Authentication
 - HttpOnly Cookies
 - bcrypt
-- Multer (memory storage)
-- Cloudinary
 - dotenv
 - cookie-parser
 - cors
@@ -30,7 +28,6 @@ A lightweight REST API backend for RSK Associates corporate company website CMS.
 ├── app.js
 ├── server.js
 ├── config/
-│   ├── cloudinary.js
 │   └── db.js
 ├── controllers/
 │   ├── authController.js
@@ -45,7 +42,7 @@ A lightweight REST API backend for RSK Associates corporate company website CMS.
 ├── middleware/
 │   ├── auth.js
 │   ├── errorHandler.js
-│   └── upload.js
+│   └── validate.js
 ├── models/
 │   ├── User.js
 │   ├── HeroContent.js
@@ -69,7 +66,6 @@ A lightweight REST API backend for RSK Associates corporate company website CMS.
 │   └── contactRoutes.js
 ├── src/
 │   └── utils/
-│       ├── cloudinaryUpload.js
 │       └── seed.js
 ├── validators/
 │   ├── authValidator.js
@@ -107,10 +103,9 @@ JWT_SECRET=your_jwt_secret_key_here_change_in_production
 JWT_EXPIRE=7d
 COOKIE_EXPIRE=7
 
-# Cloudinary Configuration
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
+# Gmail SMTP Configuration
+GMAIL_USER=..........
+GMAIL_APP_PASSWORD=..........
 ```
 
 ## Running the Project
@@ -154,7 +149,6 @@ Default credentials:
 ### Hero Content (Admin only)
 - `GET /api/hero` - Get hero content
 - `PUT /api/hero` - Update hero content
-- `POST /api/hero/upload` - Upload hero background image
 
 ### Services (Admin only)
 - `GET /api/services` - Get all services
@@ -191,7 +185,6 @@ Default credentials:
 - `POST /api/team` - Create team member
 - `PUT /api/team/:id` - Update team member
 - `DELETE /api/team/:id` - Delete team member
-- `POST /api/team/:id/upload` - Upload team member image
 
 ### Contact Messages
 - `POST /api/contact` - Submit contact message (Public)
@@ -199,17 +192,9 @@ Default credentials:
 - `GET /api/contact/:id` - Get single message (Admin only)
 - `DELETE /api/contact/:id` - Delete message (Admin only)
 
-## Uploads
+## Images
 
-Images are uploaded to Cloudinary via the backend. The API returns full Cloudinary URLs.
-
-Supported formats: JPEG, JPG, PNG, WEBP
-Maximum file size: 5MB
-
-Upload endpoints:
-- `POST /api/hero/upload` - Upload hero background image
-- `POST /api/partners/:id/upload` - Upload partner logo
-- `POST /api/team/:id/upload` - Upload team member photo
+Images are provided as URLs in the request body. The frontend is responsible for uploading images to its own storage and sending the resulting URL to the backend.
 
 ## API Responses
 

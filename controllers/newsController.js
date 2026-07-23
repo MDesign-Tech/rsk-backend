@@ -1,6 +1,5 @@
 const NewsArticle = require('../models/NewsArticle');
 const TeamMember = require('../models/TeamMember');
-const { handleImageUpdate, deleteFromCloudinary } = require('../src/utils/cloudinaryUpload');
 
 // Build a mongoose filter + sort from the shared list query params.
 const buildListQuery = (query, { forcePublished = false } = {}) => {
@@ -224,7 +223,7 @@ const resolveAuthor = async (authorId) => {
 // POST /api/news  (create)
 const createArticle = async (req, res) => {
   try {
-    const { title, excerpt, content, category, author, status, featured, readingTime } = req.body;
+    const { title, excerpt, content, category, author, status, featured, readingTime, image } = req.body;
 
     const authorData = await resolveAuthor(author);
     if (!authorData) {
@@ -251,10 +250,8 @@ const createArticle = async (req, res) => {
       likes: 0,
       shares: 0,
       commentsCount: 0,
+      image: image || null,
     });
-
-    // Upload image (required). If no file, validation will fail on save.
-    await handleImageUpdate(article, req.file, 'rsk/news');
 
     if (article.status === 'published') {
       article.publishedAt = new Date();
@@ -287,7 +284,7 @@ const updateArticle = async (req, res) => {
       });
     }
 
-    const { title, excerpt, content, category, author, status, featured, readingTime } = req.body;
+    const { title, excerpt, content, category, author, status, featured, readingTime, image } = req.body;
 
     if (title !== undefined) article.title = title;
     if (excerpt !== undefined) article.excerpt = excerpt;
@@ -295,6 +292,7 @@ const updateArticle = async (req, res) => {
     if (category !== undefined) article.category = category;
     if (featured !== undefined) article.featured = featured === 'true' || featured === true;
     if (readingTime !== undefined) article.readingTime = Number(readingTime);
+    if (image !== undefined) article.image = image;
 
     if (author !== undefined) {
       const authorData = await resolveAuthor(author);
@@ -318,9 +316,6 @@ const updateArticle = async (req, res) => {
         article.publishedAt = new Date();
       }
     }
-
-    // Replace image only if a new file is provided.
-    await handleImageUpdate(article, req.file, 'rsk/news');
 
     article.updatedAt = new Date();
     await article.save();
@@ -348,10 +343,6 @@ const deleteArticle = async (req, res) => {
         success: false,
         message: 'Article not found',
       });
-    }
-
-    if (article.imagePublicId) {
-      await deleteFromCloudinary(article.imagePublicId);
     }
 
     await article.deleteOne();

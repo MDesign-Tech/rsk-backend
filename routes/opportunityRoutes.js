@@ -16,7 +16,7 @@ const {
   validateStatusToggle,
 } = require('../validators/opportunityValidator');
 const { protect } = require('../middleware/auth');
-const { upload, multerErrorHandler } = require('../middleware/upload');
+const validate = require('../middleware/validate');
 
 const router = express.Router();
 
@@ -32,21 +32,20 @@ router.get('/admin', listAdminOpportunities);
 router.get('/:id', getOpportunityById);
 router.post(
   '/',
-  upload.single('image'),
-  multerErrorHandler,
   validateCreateOpportunity,
+  validate,
   createOpportunity
 );
 router.put(
   '/:id',
-  upload.single('image'),
-  multerErrorHandler,
   validateUpdateOpportunity,
+  validate,
   updateOpportunity
 );
 router.patch(
   '/:id/status',
   validateStatusToggle,
+  validate,
   toggleOpportunityStatus
 );
 router.delete('/:id', deleteOpportunity);

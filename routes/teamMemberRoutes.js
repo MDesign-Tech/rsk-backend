@@ -8,11 +8,10 @@ const {
   updateTeamMember,
   deleteTeamMember,
   toggleTeamMemberVisibility,
-  upload,
 } = require('../controllers/teamMemberController');
 const { validateTeamMember } = require('../validators/teamMemberValidator');
 const { protect } = require('../middleware/auth');
-const { multerErrorHandler } = require('../middleware/upload');
+const validate = require('../middleware/validate');
 
 const router = express.Router();
 
@@ -25,17 +24,14 @@ router.get('/', getTeamMembers);
 router.get('/:id', getTeamMember);
 router.post(
   '/',
-  upload.single('image'),
-  multerErrorHandler,
   validateTeamMember,
+  validate,
   createTeamMember
 );
-// PUT /team/:id now handles both content and (optional) image updates.
 router.put(
   '/:id',
-  upload.single('image'),
-  multerErrorHandler,
   validateTeamMember,
+  validate,
   updateTeamMember
 );
 router.delete('/:id', deleteTeamMember);

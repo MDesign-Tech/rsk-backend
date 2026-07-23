@@ -62,6 +62,21 @@ const validateAbout = [
     .isObject()
     .withMessage('YouTube must be an object'),
 
+  body('ourStory')
+    .optional()
+    .isObject()
+    .withMessage('Our story must be an object'),
+
+  body('ourStory.title')
+    .optional()
+    .notEmpty()
+    .withMessage('Our story title is required')
+    .trim(),
+
+  body('ourStory.description')
+    .optional()
+    .notEmpty()
+    .withMessage('Our story description is required'),
 
 ];
 

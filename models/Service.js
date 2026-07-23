@@ -12,6 +12,14 @@ const serviceSchema = new mongoose.Schema(
       required: [true, 'Service description is required'],
       trim: true,
     },
+    image: {
+      type: String,
+      default: null,
+    },
+    imagePublicId: {
+      type: String,
+      default: null,
+    },
     visible: {
       type: Boolean,
       default: true,

@@ -1,5 +1,4 @@
 const Opportunity = require('../models/Opportunity');
-const { handleImageUpdate, deleteFromCloudinary } = require('../src/utils/cloudinaryUpload');
 
 // Build a mongoose filter + sort from the shared list query params.
 const buildListQuery = (query, { forceOpen = false } = {}) => {
@@ -211,6 +210,7 @@ const createOpportunity = async (req, res) => {
       requirements,
       benefits,
       featured,
+      image,
     } = req.body;
 
     // Generate slug
@@ -273,10 +273,8 @@ const createOpportunity = async (req, res) => {
       visible: visible === 'true' || visible === true,
       views: 0,
       applicants: null,
+      image: image || null,
     });
-
-    // Upload image if provided
-    await handleImageUpdate(opportunity, req.file, 'rsk/opportunities');
 
     await opportunity.save();
 
@@ -324,6 +322,7 @@ const updateOpportunity = async (req, res) => {
       requirements,
       benefits,
       featured,
+      image,
     } = req.body;
 
     if (type !== undefined) opportunity.type = type;
@@ -338,6 +337,7 @@ const updateOpportunity = async (req, res) => {
     if (contactPhone !== undefined) opportunity.contact.phone = contactPhone;
     if (featured !== undefined) opportunity.featured = featured === 'true' || featured === true;
     if (visible !== undefined) opportunity.visible = visible === 'true' || visible === true;
+    if (image !== undefined) opportunity.image = image;
 
     if (org !== undefined) {
       opportunity.organization.name = org;
@@ -375,9 +375,6 @@ const updateOpportunity = async (req, res) => {
       opportunity.slug = await Opportunity.generateUniqueSlug(baseSlug, opportunity._id);
     }
 
-    // Replace image only if a new file is provided.
-    await handleImageUpdate(opportunity, req.file, 'rsk/opportunities');
-
     opportunity.updatedAt = new Date();
     await opportunity.save();
 
@@ -404,10 +401,6 @@ const deleteOpportunity = async (req, res) => {
         success: false,
         message: 'Opportunity not found',
       });
-    }
-
-    if (opportunity.imagePublicId) {
-      await deleteFromCloudinary(opportunity.imagePublicId);
     }
 
     await opportunity.deleteOne();

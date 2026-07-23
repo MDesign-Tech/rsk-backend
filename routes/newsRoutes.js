@@ -17,7 +17,7 @@ const {
   validateStatusToggle,
 } = require('../validators/newsValidator');
 const { protect } = require('../middleware/auth');
-const { upload, multerErrorHandler } = require('../middleware/upload');
+const validate = require('../middleware/validate');
 
 const router = express.Router();
 
@@ -34,21 +34,20 @@ router.get('/', listArticles);
 router.get('/:id', getArticleById);
 router.post(
   '/',
-  upload.single('image'),
-  multerErrorHandler,
   validateCreateNews,
+  validate,
   createArticle
 );
 router.put(
   '/:id',
-  upload.single('image'),
-  multerErrorHandler,
   validateUpdateNews,
+  validate,
   updateArticle
 );
 router.patch(
   '/:id/status',
   validateStatusToggle,
+  validate,
   toggleArticleStatus
 );
 router.delete('/:id', deleteArticle);

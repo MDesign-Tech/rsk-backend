@@ -59,6 +59,18 @@ const aboutUsSchema = new mongoose.Schema(
       },
     ],
 
+    ourStory: {
+          title: {
+            type: String,
+            required: [true, "Our story title is required"],
+            trim: true,
+          },
+          description: {
+            type: String,
+            required: [true, "Our story description is required"],
+          },
+        },
+
     socialMedia: {
       facebook: {
         href: {
@@ -105,6 +117,7 @@ const aboutUsSchema = new mongoose.Schema(
           type: String,
           default: null,
         },
+
         visible: {
           type: Boolean,
           default: true,

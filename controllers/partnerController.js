@@ -1,6 +1,4 @@
 const Partner = require('../models/Partner');
-const { upload } = require('../middleware/upload');
-const { handleImageUpdate, deleteFromCloudinary } = require('../src/utils/cloudinaryUpload');
 
 
 const getPartners = async (req, res) => {
@@ -57,9 +55,7 @@ const createPartner = async (req, res) => {
 
 
 // PUT /partners/:id
-// Accepts multipart/form-data. Updates text fields and, when an image file is
-// present, uploads it to Cloudinary (replacing the previous image) in the same
-// atomic request. If no image is sent, only the text fields are updated.
+// Updates text fields and image URL when provided in the request body.
 const updatePartner = async (req, res) => {
   const partner = await Partner.findById(req.params.id);
 
@@ -73,8 +69,6 @@ const updatePartner = async (req, res) => {
 
   try {
     Object.assign(partner, req.body);
-
-    await handleImageUpdate(partner, req.file, 'rsk/partners');
 
     await partner.save();
 
@@ -106,10 +100,6 @@ const deletePartner = async (req, res) => {
   }
 
   try {
-    if (partner.imagePublicId) {
-      await deleteFromCloudinary(partner.imagePublicId);
-    }
-
     await partner.deleteOne();
 
     return res.status(200).json({
@@ -121,7 +111,7 @@ const deletePartner = async (req, res) => {
     console.error('Partner delete error:', error);
     return res.status(500).json({
       success: false,
-      message: 'Failed to delete partner image from Cloudinary',
+      message: 'Failed to delete partner',
       errors: [error.message || 'Unknown error'],
     });
   }
@@ -156,5 +146,4 @@ module.exports = {
   updatePartner,
   deletePartner,
   togglePartnerVisibility,
-  upload, // exported for route-level multer wiring
 };

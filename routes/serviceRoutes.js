@@ -10,6 +10,7 @@ const {
 } = require('../controllers/serviceController');
 const { validateService } = require('../validators/serviceValidator');
 const { protect } = require('../middleware/auth');
+const validate = require('../middleware/validate');
 
 const router = express.Router();
 
@@ -17,8 +18,8 @@ router.use(protect);
 
 router.get('/', getServices);
 router.get('/:id', getService);
-router.post('/', validateService, createService);
-router.put('/:id', validateService, updateService);
+router.post('/', validateService, validate, createService);
+router.put('/:id', validateService, validate, updateService);
 router.delete('/:id', deleteService);
 router.patch('/:id/visibility', body('visible').isBoolean().exists({ checkFalsy: true }), toggleServiceVisibility);
 

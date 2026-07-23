@@ -1,6 +1,4 @@
 const HeroContent = require("../models/HeroContent");
-const { upload } = require("../middleware/upload");
-const { handleImageUpdate } = require("../src/utils/cloudinaryUpload");
 
 const getHero = async (req, res) => {
   const hero = await HeroContent.findOne();
@@ -21,9 +19,7 @@ const getHero = async (req, res) => {
 };
 
 // PUT /hero
-// Accepts multipart/form-data. Updates text fields and, when an image file is
-// present, uploads it to Cloudinary (replacing the previous image) in the same
-// atomic request. If no image is sent, only the text fields are updated.
+// Updates text fields and image URL when provided in the request body.
 const updateHero = async (req, res) => {
   try {
     let hero = await HeroContent.findOne();
@@ -34,9 +30,6 @@ const updateHero = async (req, res) => {
 
     // Apply text fields from the request body.
     Object.assign(hero, req.body);
-
-    // Handle image upload (no-op if no file was provided).
-    await handleImageUpdate(hero, req.file, "rsk/hero");
 
     await hero.save();
 
@@ -128,5 +121,4 @@ module.exports = {
   updateHero,
   updateSubtitleVisibility,
   updateTrustVisibility,
-  upload, // exported for route-level multer wiring
 };

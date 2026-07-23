@@ -1,7 +1,5 @@
 const { body } = require('express-validator');
 
-// Used for create. The image is uploaded as a multipart file (field name
-// "image"), so it is intentionally NOT validated as a body string here.
 const validateCreateOpportunity = [
   body('type')
     .notEmpty().withMessage('Type is required')
@@ -57,6 +55,9 @@ const validateCreateOpportunity = [
   body('benefits')
     .optional()
     .isString().withMessage('Benefits must be a JSON string'),
+  body('image')
+    .optional()
+    .isURL().withMessage('Image must be a valid URL'),
 ];
 
 // Used for update (partial). All fields optional.
@@ -122,6 +123,9 @@ const validateUpdateOpportunity = [
   body('benefits')
     .optional()
     .isString().withMessage('Benefits must be a JSON string'),
+  body('image')
+    .optional()
+    .isURL().withMessage('Image must be a valid URL'),
 ];
 
 const validateStatusToggle = [

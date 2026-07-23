@@ -10,6 +10,7 @@ const {
 } = require('../controllers/teamSectionController');
 const { validateTeamSection } = require('../validators/teamSectionValidator');
 const { protect } = require('../middleware/auth');
+const validate = require('../middleware/validate');
 
 const router = express.Router();
 
@@ -17,8 +18,8 @@ router.use(protect);
 
 router.get('/', getTeamSections);
 router.get('/:id', getTeamSection);
-router.post('/', validateTeamSection, createTeamSection);
-router.put('/:id', validateTeamSection, updateTeamSection);
+router.post('/', validateTeamSection, validate, createTeamSection);
+router.put('/:id', validateTeamSection, validate, updateTeamSection);
 router.patch('/:id/visibility', body('visible').isBoolean().exists({ checkFalsy: true }), toggleTeamSectionVisibility);
 router.delete('/:id', deleteTeamSection);
 

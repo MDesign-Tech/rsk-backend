@@ -6,6 +6,8 @@ const Service = require('./models/Service');
 const HeroContent = require('./models/HeroContent');
 const Partner = require('./models/Partner');
 const TeamSection = require('./models/TeamSection');
+const WhyJoinUs = require('./models/WhyJoinUs');
+const WhyBecomeMember = require('./models/WhyBecomeMember');
 
 const DEFAULT_ABOUT = {
   title: "About RSK Associates",
@@ -173,6 +175,91 @@ const DEFAULT_SERVICES = [
   },
 ];
 
+const DEFAULT_WHY_JOIN_US = {
+  title: 'Why Join RSK',
+  description:
+    'Join a premium corporate community designed for growth. Move faster with trusted partners, business support, and member-only opportunities for teams and leaders.',
+  points: [
+    {
+      title: 'Trusted corporate network',
+      description:
+        'Connect with established businesses, decision-makers, and strategic partners across industries.',
+      image: null,
+      imagePublicId: null,
+    },
+    {
+      title: 'Business-ready solutions',
+      description:
+        'Access practical advisory services, tailored training, and funding guidance designed for growth.',
+      image: null,
+      imagePublicId: null,
+    },
+    {
+      title: 'Strategic credibility',
+      description:
+        'Boost your company profile through a respected membership that opens doors and builds trust.',
+      image: null,
+      imagePublicId: null,
+    },
+    {
+      title: 'Global opportunity pipeline',
+      description:
+        'Receive curated tender alerts, internship matches, and training opportunities for your team.',
+      image: null,
+      imagePublicId: null,
+    },
+  ],
+};
+
+const DEFAULT_WHY_BECOME_MEMBER = {
+  title: 'Become a member.',
+  description: 'Member benefits designed for modern businesses.',
+  points: [
+    {
+      title: 'Networking',
+      description:
+        'Build lasting business relationships with senior decision makers.',
+      image: null,
+      imagePublicId: null,
+    },
+    {
+      title: 'Training',
+      description:
+        'Exclusive workshops and executive learning sessions for members.',
+      image: null,
+      imagePublicId: null,
+    },
+    {
+      title: 'Business Support',
+      description:
+        'Access advisory guidance and operational support when you need it most.',
+      image: null,
+      imagePublicId: null,
+    },
+    {
+      title: 'Funding Opportunities',
+      description:
+        'Be first to know about grants, tenders, and capital introductions.',
+      image: null,
+      imagePublicId: null,
+    },
+    {
+      title: 'Certifications',
+      description:
+        'Gain credibility through member-focused professional certifications.',
+      image: null,
+      imagePublicId: null,
+    },
+    {
+      title: 'Mentorship',
+      description:
+        'Receive one-to-one mentorship from industry leaders and advisors.',
+      image: null,
+      imagePublicId: null,
+    },
+  ],
+};
+
 const DEFAULT_TEAM_SECTIONS = [
   {
     name: "Board of Directors",
@@ -253,6 +340,22 @@ const seedData = async () => {
       console.log('Default partner data created successfully');
     } else {
       console.log('Partner data already exists');
+    }
+
+    const whyJoinUsExists = await WhyJoinUs.findOne();
+    if (!whyJoinUsExists) {
+      await WhyJoinUs.create(DEFAULT_WHY_JOIN_US);
+      console.log('Default Why Join Us data created successfully');
+    } else {
+      console.log('Why Join Us data already exists');
+    }
+
+    const whyBecomeMemberExists = await WhyBecomeMember.findOne();
+    if (!whyBecomeMemberExists) {
+      await WhyBecomeMember.create(DEFAULT_WHY_BECOME_MEMBER);
+      console.log('Default Why Become Member data created successfully');
+    } else {
+      console.log('Why Become Member data already exists');
     }
 
     for (const sectionData of DEFAULT_TEAM_SECTIONS) {

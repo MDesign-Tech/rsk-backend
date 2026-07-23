@@ -18,6 +18,9 @@ const teamRoutes = require('./routes/teamMemberRoutes');
 const teamSectionRoutes = require('./routes/teamSectionRoutes');
 const contactRoutes = require('./routes/contactRoutes');
 const websiteRoute = require('./routes/website.routes')
+const newsBlogRoutes = require('./routes/newsBlogRoutes');
+const whyJoinUsRoutes = require('./routes/whyJoinUsRoutes');
+const whyBecomeMemberRoutes = require('./routes/whyBecomeMemberRoutes');
 
 const app = express();
 
@@ -70,6 +73,9 @@ app.use('/api/team', teamRoutes);
 app.use('/api/team-sections', teamSectionRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/website', websiteRoute)
+app.use('/api/news-blog', newsBlogRoutes);
+app.use('/api/why-join-us', whyJoinUsRoutes);
+app.use('/api/why-become-member', whyBecomeMemberRoutes);
 
 app.get('/', (req, res) => {
   res.json({

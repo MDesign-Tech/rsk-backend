@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const newsArticleSchema = new mongoose.Schema(
+const newsSchema = new mongoose.Schema(
   {
     title: {
       type: String,
@@ -16,27 +16,22 @@ const newsArticleSchema = new mongoose.Schema(
     excerpt: {
       type: String,
       required: [true, 'Excerpt is required'],
-      trim: true,
+      maxlength: 300,
     },
     content: {
       type: String,
       required: [true, 'Content is required'],
     },
-    image: {
+    coverImage: {
       type: String,
-      required: [true, 'Image is required'],
+      required: [true, 'Cover image is required'],
     },
-    category: {
-      type: String,
-      required: [true, 'Category is required'],
-      trim: true,
-    },
-    author: {
-      _id: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'TeamMember',
-        required: [true, 'Author is required'],
+    gallery: [
+      {
+        type: String,
       },
+    ],
+    author: {
       name: {
         type: String,
         required: [true, 'Author name is required'],
@@ -50,37 +45,22 @@ const newsArticleSchema = new mongoose.Schema(
         default: null,
       },
     },
+    publishedAt: {
+      type: Date,
+      default: Date.now,
+    },
+    category: {
+      type: String,
+      default: 'General',
+    },
     status: {
       type: String,
-      enum: ['draft', 'published', 'archived'],
-      default: 'published',
+      enum: ['draft', 'published'],
+      default: 'draft',
     },
     featured: {
       type: Boolean,
       default: false,
-    },
-    readingTime: {
-      type: Number,
-      default: 5,
-    },
-    views: {
-      type: Number,
-      default: 0,
-    },
-    likes: {
-      type: Number,
-      default: 0,
-    },
-    shares: {
-      type: Number,
-      default: 0,
-    },
-    commentsCount: {
-      type: Number,
-      default: 0,
-    },
-    publishedAt: {
-      type: Date,
     },
   },
   {
@@ -88,19 +68,14 @@ const newsArticleSchema = new mongoose.Schema(
   }
 );
 
-// Indexes
-newsArticleSchema.index({ slug: 1 }, { unique: true });
-newsArticleSchema.index({ status: 1 });
-newsArticleSchema.index({ category: 1 });
-newsArticleSchema.index({ publishedAt: -1 });
-newsArticleSchema.index({ featured: 1 });
+newsSchema.index({ slug: 1 }, { unique: true });
+newsSchema.index({ status: 1 });
+newsSchema.index({ category: 1 });
+newsSchema.index({ publishedAt: -1 });
+newsSchema.index({ featured: 1 });
 
 /**
  * Generate a URL-friendly slug from a title.
- * 1. lowercase
- * 2. spaces -> hyphens
- * 3. keep only a-z, 0-9, hyphens
- * 4. truncate to 80 chars
  */
 const generateBaseSlug = (title) => {
   return title
@@ -116,16 +91,15 @@ const generateBaseSlug = (title) => {
  * Ensure slug uniqueness by appending -1, -2, etc. when a collision occurs.
  */
 const generateUniqueSlug = async function (baseSlug, excludeId = null) {
-  let slug = baseSlug || 'article';
+  let slug = baseSlug || 'news';
   let counter = 1;
 
-  // eslint-disable-next-line no-constant-condition
   while (true) {
     const query = { slug };
     if (excludeId) {
       query._id = { $ne: excludeId };
     }
-    const exists = await mongoose.model('NewsArticle').findOne(query);
+    const exists = await mongoose.model('News').findOne(query);
     if (!exists) {
       return slug;
     }
@@ -134,7 +108,7 @@ const generateUniqueSlug = async function (baseSlug, excludeId = null) {
   }
 };
 
-newsArticleSchema.statics.generateSlug = generateBaseSlug;
-newsArticleSchema.statics.generateUniqueSlug = generateUniqueSlug;
+newsSchema.statics.generateSlug = generateBaseSlug;
+newsSchema.statics.generateUniqueSlug = generateUniqueSlug;
 
-module.exports = mongoose.model('NewsArticle', newsArticleSchema);
+module.exports = mongoose.model('News', newsSchema);

@@ -18,16 +18,17 @@ const {
 } = require('../validators/authValidator');
 const { protect } = require('../middleware/auth');
 const { otpLimiter } = require('../middleware/rateLimit');
+const validate = require('../middleware/validate');
 
 const router = express.Router();
 
-router.post('/login', validateLogin, login);
+router.post('/login', validateLogin, validate, login);
 router.post('/logout', logout);
 router.get('/me', protect, getMe);
 
-router.post('/forgot-password', otpLimiter, validateForgotPassword, forgotPassword);
-router.post('/verify-otp', validateVerifyOTP, verifyOTP);
-router.post('/resend-otp', otpLimiter, validateResendOTP, resendOTP);
-router.post('/reset-password', validateResetPassword, resetPassword);
+router.post('/forgot-password', otpLimiter, validateForgotPassword, validate, forgotPassword);
+router.post('/verify-otp', validateVerifyOTP, validate, verifyOTP);
+router.post('/resend-otp', otpLimiter, validateResendOTP, validate, resendOTP);
+router.post('/reset-password', validateResetPassword, validate, resetPassword);
 
 module.exports = router;
