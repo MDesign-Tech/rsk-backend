@@ -149,7 +149,7 @@ const getArticleBySlug = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      data: article,
+      data: { article },
     });
   } catch (error) {
     console.error('Get article by slug error:', error);
@@ -174,7 +174,7 @@ const getFeaturedArticles = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      data: articles,
+      data: { articles },
     });
   } catch (error) {
     console.error('Get featured articles error:', error);
@@ -195,7 +195,7 @@ const getArticlesByCategory = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      data: articles,
+      data: { articles },
     });
   } catch (error) {
     console.error('Get articles by category error:', error);
@@ -223,7 +223,7 @@ const resolveAuthor = async (authorId) => {
 // POST /api/news  (create)
 const createArticle = async (req, res) => {
   try {
-    const { title, excerpt, content, category, author, status, featured, readingTime, image } = req.body;
+    const { title, excerpt, content, category, author, status, featured, readingTime, coverImage } = req.body;
 
     const authorData = await resolveAuthor(author);
     if (!authorData) {
@@ -250,7 +250,7 @@ const createArticle = async (req, res) => {
       likes: 0,
       shares: 0,
       commentsCount: 0,
-      image: image || null,
+      coverImage: coverImage || null,
     });
 
     if (article.status === 'published') {
@@ -284,7 +284,7 @@ const updateArticle = async (req, res) => {
       });
     }
 
-    const { title, excerpt, content, category, author, status, featured, readingTime, image } = req.body;
+    const { title, excerpt, content, category, author, status, featured, readingTime, coverImage } = req.body;
 
     if (title !== undefined) article.title = title;
     if (excerpt !== undefined) article.excerpt = excerpt;
@@ -292,7 +292,7 @@ const updateArticle = async (req, res) => {
     if (category !== undefined) article.category = category;
     if (featured !== undefined) article.featured = featured === 'true' || featured === true;
     if (readingTime !== undefined) article.readingTime = Number(readingTime);
-    if (image !== undefined) article.image = image;
+    if (coverImage !== undefined) article.coverImage = coverImage;
 
     if (author !== undefined) {
       const authorData = await resolveAuthor(author);

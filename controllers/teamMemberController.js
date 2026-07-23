@@ -4,7 +4,7 @@ const TeamSection = require('../models/TeamSection');
 const getTeamMembers = async (req, res) => {
   const teamMembers = await TeamMember.find()
     .populate('section')
-    .sort({ createdAt: 1 });
+    .sort({ order: 1, createdAt: 1 });
 
   const sections = await TeamSection.find().sort({ order: 1 });
 
@@ -37,7 +37,7 @@ const getPublicTeam = async (req, res) => {
     section: { $in: sectionIds },
   })
     .populate('section')
-    .sort({ createdAt: 1 });
+    .sort({ order: 1, createdAt: 1 });
 
   const grouped = sections.map((section) => ({
     section: {
@@ -92,7 +92,12 @@ const parseJsonFields = (body) => {
 
 const createTeamMember = async (req, res) => {
   try {
-    const teamMember = new TeamMember(parseJsonFields(req.body));
+    const body = parseJsonFields(req.body);
+    // Team members without images must default to hidden visibility
+    if (!body.image) {
+      body.visible = false;
+    }
+    const teamMember = new TeamMember(body);
 
     await teamMember.save();
     await teamMember.populate('section');
@@ -124,7 +129,12 @@ const updateTeamMember = async (req, res) => {
   }
 
   try {
-    Object.assign(teamMember, parseJsonFields(req.body));
+    const body = parseJsonFields(req.body);
+    // Team members without images must remain hidden
+    if (!body.image) {
+      body.visible = false;
+    }
+    Object.assign(teamMember, body);
 
     await teamMember.save();
     await teamMember.populate('section');
@@ -184,6 +194,15 @@ const toggleTeamMemberVisibility = async (req, res) => {
     });
   }
 
+  // Prevent showing team members without images
+  if (req.body.visible && !teamMember.image) {
+    return res.status(400).json({
+      success: false,
+      message: 'Cannot show a team member without an image. Please add an image first.',
+      errors: ['Team member must have an image to be visible'],
+    });
+  }
+
   teamMember.visible = req.body.visible;
   await teamMember.save();
   await teamMember.populate('section');
@@ -195,6 +214,42 @@ const toggleTeamMemberVisibility = async (req, res) => {
   });
 };
 
+const reorderMembers = async (req, res) => {
+  const { order } = req.body;
+
+  if (!Array.isArray(order)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Order must be an array of member IDs',
+      errors: ['Order must be an array of member IDs'],
+    });
+  }
+
+  try {
+    const bulkOps = order.map((id, index) => ({
+      updateOne: {
+        filter: { _id: id },
+        update: { $set: { order: index } },
+      },
+    }));
+
+    await TeamMember.bulkWrite(bulkOps);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Members reordered successfully',
+      data: {},
+    });
+  } catch (error) {
+    console.error('Reorder members error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to reorder members',
+      errors: [error.message || 'Unknown error'],
+    });
+  }
+};
+
 module.exports = {
   getTeamMembers,
   getPublicTeam,
@@ -203,4 +258,5 @@ module.exports = {
   updateTeamMember,
   deleteTeamMember,
   toggleTeamMemberVisibility,
+  reorderMembers,
 };

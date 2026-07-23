@@ -16,12 +16,9 @@ const validateWhyBecomeMember = [
   body('points.*.description')
     .optional()
     .trim(),
-  body('points.*.image')
+  body('points.*.visible')
     .optional()
-    .isURL().withMessage('Point image must be a valid URL'),
-  body('points.*.imagePublicId')
-    .optional()
-    .trim(),
+    .isBoolean().withMessage('Point visible must be a boolean'),
   body('visible')
     .optional()
     .isBoolean().withMessage('Visible must be a boolean'),

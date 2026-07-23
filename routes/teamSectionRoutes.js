@@ -7,6 +7,7 @@ const {
   updateTeamSection,
   deleteTeamSection,
   toggleTeamSectionVisibility,
+  reorderSections,
 } = require('../controllers/teamSectionController');
 const { validateTeamSection } = require('../validators/teamSectionValidator');
 const { protect } = require('../middleware/auth');
@@ -22,5 +23,6 @@ router.post('/', validateTeamSection, validate, createTeamSection);
 router.put('/:id', validateTeamSection, validate, updateTeamSection);
 router.patch('/:id/visibility', body('visible').isBoolean().exists({ checkFalsy: true }), toggleTeamSectionVisibility);
 router.delete('/:id', deleteTeamSection);
+router.patch('/reorder', body('order').isArray().exists({ checkFalsy: true }), reorderSections);
 
 module.exports = router;

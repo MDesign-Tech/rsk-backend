@@ -90,7 +90,11 @@ const teamMemberSchema = new mongoose.Schema(
     },
     visible: {
       type: Boolean,
-      default: true,
+      default: false,
+    },
+    order: {
+      type: Number,
+      default: 0,
     },
   },
   {

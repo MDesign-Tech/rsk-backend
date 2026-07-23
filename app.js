@@ -18,7 +18,8 @@ const teamRoutes = require('./routes/teamMemberRoutes');
 const teamSectionRoutes = require('./routes/teamSectionRoutes');
 const contactRoutes = require('./routes/contactRoutes');
 const websiteRoute = require('./routes/website.routes')
-const newsBlogRoutes = require('./routes/newsBlogRoutes');
+const newsRoutes = require('./routes/newsRoutes');
+const opportunityRoutes = require('./routes/opportunityRoutes');
 const whyJoinUsRoutes = require('./routes/whyJoinUsRoutes');
 const whyBecomeMemberRoutes = require('./routes/whyBecomeMemberRoutes');
 
@@ -31,15 +32,15 @@ app.use((req, res, next) => {
 });
 
 // Connect to database
-// app.use(async (req, res, next) => {
-//   try {
-//     await connectDB();
-//     next();
-//   } catch (err) {
-//     console.error("DB connection error in middleware:", err.message);
-//     next(err);
-//   }
-// });
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    console.error("DB connection error in middleware:", err.message);
+    next(err);
+  }
+});
 
 app.use(
   helmet({
@@ -73,7 +74,8 @@ app.use('/api/team', teamRoutes);
 app.use('/api/team-sections', teamSectionRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/website', websiteRoute)
-app.use('/api/news-blog', newsBlogRoutes);
+app.use('/api/news', newsRoutes);
+app.use('/api/opportunities', opportunityRoutes);
 app.use('/api/why-join-us', whyJoinUsRoutes);
 app.use('/api/why-become-member', whyBecomeMemberRoutes);
 

@@ -6,6 +6,8 @@ const Service = require('./models/Service');
 const HeroContent = require('./models/HeroContent');
 const Partner = require('./models/Partner');
 const TeamSection = require('./models/TeamSection');
+const TeamMember = require('./models/TeamMember');
+const NewsArticle = require('./models/NewsArticle');
 const WhyJoinUs = require('./models/WhyJoinUs');
 const WhyBecomeMember = require('./models/WhyBecomeMember');
 
@@ -175,6 +177,60 @@ const DEFAULT_SERVICES = [
   },
 ];
 
+const DEFAULT_NEWS = [
+  {
+    title: "RSK Associates Expands Tax Advisory Services",
+    slug: "rsk-associates-expands-tax-advisory-services",
+    excerpt: "We are pleased to announce the expansion of our tax advisory services to include international tax planning for businesses operating across borders.",
+    content: "RSK Associates is excited to announce the expansion of our tax advisory services. Our new international tax planning division will help businesses navigate cross-border tax regulations and optimize their global tax positions. This expansion reflects our commitment to providing comprehensive financial solutions to our clients.",
+    coverImage: null,
+    category: "Finance",
+    author: {
+      name: "RSK Admin",
+      role: "Administrator",
+      avatar: null,
+    },
+    status: "published",
+    featured: true,
+    readingTime: 3,
+    publishedAt: new Date('2024-01-15'),
+  },
+  {
+    title: "New Business Management Consulting Package Launched",
+    slug: "new-business-management-consulting-package-launched",
+    excerpt: "Introducing our new comprehensive business management consulting package designed for SMEs looking to streamline operations and drive growth.",
+    content: "Our new business management consulting package combines strategic planning, operational efficiency analysis, and performance monitoring to help SMEs achieve sustainable growth. The package includes monthly advisory sessions, custom dashboards, and actionable recommendations.",
+    coverImage: null,
+    category: "Business",
+    author: {
+      name: "RSK Admin",
+      role: "Administrator",
+      avatar: null,
+    },
+    status: "published",
+    featured: false,
+    readingTime: 4,
+    publishedAt: new Date('2024-02-20'),
+  },
+  {
+    title: "RSK Associates Partners with Local Financial Institutions",
+    slug: "rsk-associates-partners-with-local-financial-institutions",
+    excerpt: "We have formed strategic partnerships with leading local financial institutions to provide our clients with better access to funding and financial products.",
+    content: "RSK Associates has signed memoranda of understanding with three leading local financial institutions. These partnerships will enable our clients to access preferential financing terms, specialized financial products, and streamlined loan application processes.",
+    coverImage: null,
+    category: "Business",
+    author: {
+      name: "RSK Admin",
+      role: "Administrator",
+      avatar: null,
+    },
+    status: "published",
+    featured: false,
+    readingTime: 2,
+    publishedAt: new Date('2024-03-10'),
+  },
+];
+
 const DEFAULT_WHY_JOIN_US = {
   title: 'Why Join RSK',
   description:
@@ -340,6 +396,28 @@ const seedData = async () => {
       console.log('Default partner data created successfully');
     } else {
       console.log('Partner data already exists');
+    }
+
+    // Seed a default team member for news author references
+    const defaultAuthor = await TeamMember.findOne({ name: 'RSK Admin' });
+    if (!defaultAuthor) {
+      DEFAULT_NEWS.forEach((news) => {
+        news.author._id = createdAuthor._id;
+      });
+    } else {
+      console.log('Default team member already exists');
+      // Update news seed data with existing author ID
+      DEFAULT_NEWS.forEach((news) => {
+        news.author._id = defaultAuthor._id;
+      });
+    }
+
+    const newsExists = await NewsArticle.findOne();
+    if (!newsExists) {
+      await NewsArticle.insertMany(DEFAULT_NEWS);
+      console.log('Default news data created successfully');
+    } else {
+      console.log('News data already exists');
     }
 
     const whyJoinUsExists = await WhyJoinUs.findOne();

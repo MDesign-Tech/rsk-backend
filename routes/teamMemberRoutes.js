@@ -8,6 +8,7 @@ const {
   updateTeamMember,
   deleteTeamMember,
   toggleTeamMemberVisibility,
+  reorderMembers,
 } = require('../controllers/teamMemberController');
 const { validateTeamMember } = require('../validators/teamMemberValidator');
 const { protect } = require('../middleware/auth');
@@ -36,5 +37,6 @@ router.put(
 );
 router.delete('/:id', deleteTeamMember);
 router.patch('/:id/visibility', body('visible').isBoolean().exists({ checkFalsy: true }), toggleTeamMemberVisibility);
+router.patch('/reorder', body('order').isArray().exists({ checkFalsy: true }), reorderMembers);
 
 module.exports = router;

@@ -24,7 +24,7 @@ const newsSchema = new mongoose.Schema(
     },
     coverImage: {
       type: String,
-      required: [true, 'Cover image is required'],
+      default: null,
     },
     gallery: [
       {

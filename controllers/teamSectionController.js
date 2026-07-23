@@ -111,6 +111,42 @@ const toggleTeamSectionVisibility = async (req, res) => {
   });
 };
 
+const reorderSections = async (req, res) => {
+  const { order } = req.body;
+
+  if (!Array.isArray(order)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Order must be an array of section IDs',
+      errors: ['Order must be an array of section IDs'],
+    });
+  }
+
+  try {
+    const bulkOps = order.map((id, index) => ({
+      updateOne: {
+        filter: { _id: id },
+        update: { $set: { order: index } },
+      },
+    }));
+
+    await TeamSection.bulkWrite(bulkOps);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Sections reordered successfully',
+      data: {},
+    });
+  } catch (error) {
+    console.error('Reorder sections error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to reorder sections',
+      errors: [error.message || 'Unknown error'],
+    });
+  }
+};
+
 module.exports = {
   getTeamSections,
   getTeamSection,
@@ -118,4 +154,5 @@ module.exports = {
   updateTeamSection,
   deleteTeamSection,
   toggleTeamSectionVisibility,
+  reorderSections,
 };

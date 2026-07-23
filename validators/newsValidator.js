@@ -24,9 +24,9 @@ const validateCreateNews = [
   body('readingTime')
     .optional()
     .isNumeric().withMessage('Reading time must be a number'),
-  body('image')
-    .notEmpty().withMessage('Image is required')
-    .isURL().withMessage('Image must be a valid URL'),
+  body('coverImage')
+    .optional()
+    .isURL().withMessage('Cover image must be a valid URL'),
 ];
 
 // Used for update (partial). All fields optional.
@@ -58,9 +58,9 @@ const validateUpdateNews = [
   body('readingTime')
     .optional()
     .isNumeric().withMessage('Reading time must be a number'),
-  body('image')
+  body('coverImage')
     .optional()
-    .isURL().withMessage('Image must be a valid URL'),
+    .isURL().withMessage('Cover image must be a valid URL'),
 ];
 
 const validateStatusToggle = [

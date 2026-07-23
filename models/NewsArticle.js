@@ -22,9 +22,9 @@ const newsArticleSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Content is required'],
     },
-    image: {
+    coverImage: {
       type: String,
-      required: [true, 'Image is required'],
+      default: null,
     },
     category: {
       type: String,

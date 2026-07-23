@@ -22,13 +22,9 @@ const whyBecomeMemberSchema = new mongoose.Schema(
           type: String,
           trim: true,
         },
-        image: {
-          type: String,
-          default: null,
-        },
-        imagePublicId: {
-          type: String,
-          default: null,
+        visible: {
+          type: Boolean,
+          default: true,
         },
       },
     ],
