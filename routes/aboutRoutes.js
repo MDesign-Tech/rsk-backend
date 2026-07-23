@@ -9,6 +9,8 @@ const router = express.Router();
 
 router.use(protect);
 
+//all routes
+
 router.get('/', getAbout);
 router.put('/', validateAbout, validate, updateAbout);
 router.patch('/visibility', body('visible').isBoolean().exists({ checkFalsy: true }), toggleAboutVisibility);

@@ -31,16 +31,18 @@ app.use((req, res, next) => {
   next();
 });
 
-// Connect to database
-// app.use(async (req, res, next) => {
-//   try {
-//     await connectDB();
-//     next();
-//   } catch (err) {
-//     console.error("DB connection error in middleware:", err.message);
-//     next(err);
-//   }
-// });
+
+
+// Connect to database a
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    console.error("DB connection error in middleware:", err.message);
+    next(err);
+  }
+});
 
 app.use(
   helmet({
