@@ -5,10 +5,10 @@ const validatePartner = [
     .notEmpty().withMessage('Partner name is required')
     .trim(),
   body('image')
-    .optional()
-    .isURL().withMessage('Image must be a valid URL'),
+    .optional({ nullable: true, empty: true })
+    .isURL({ require_protocol: false }).withMessage('Image must be a valid URL'),
   body('imagePublicId')
-    .optional()
+    .optional({ nullable: true, empty: true })
     .trim(),
 ];
 

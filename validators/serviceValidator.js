@@ -8,10 +8,10 @@ const validateService = [
     .notEmpty().withMessage('Service description is required')
     .trim(),
   body('image')
-    .optional()
+    .optional({ nullable: true, empty: true })
     .isURL().withMessage('Image must be a valid URL'),
   body('imagePublicId')
-    .optional()
+    .optional({ nullable: true, empty: true })
     .trim(),
 ];
 

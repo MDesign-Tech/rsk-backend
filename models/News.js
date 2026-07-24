@@ -60,7 +60,6 @@ const newsSchema = new mongoose.Schema(
   }
 );
 
-newsSchema.index({ slug: 1 }, { unique: true });
 newsSchema.index({ status: 1 });
 newsSchema.index({ category: 1 });
 newsSchema.index({ publishedAt: -1 });

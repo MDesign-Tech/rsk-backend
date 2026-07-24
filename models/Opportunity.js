@@ -66,7 +66,6 @@ const opportunitySchema = new mongoose.Schema(
   }
 );
 
-opportunitySchema.index({ slug: 1 }, { unique: true });
 opportunitySchema.index({ status: 1 });
 opportunitySchema.index({ type: 1 });
 opportunitySchema.index({ visible: 1 });
