@@ -62,6 +62,16 @@ const validateAbout = [
     .isObject()
     .withMessage('YouTube must be an object'),
 
+  body('socialMedia.tiktok')
+    .optional()
+    .isObject()
+    .withMessage('TikTok must be an object'),
+
+  body('socialMedia.snapchat')
+    .optional()
+    .isObject()
+    .withMessage('Snapchat must be an object'),
+
   body('ourStory')
     .optional()
     .isObject()

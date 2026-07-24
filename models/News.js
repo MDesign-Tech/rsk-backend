@@ -13,11 +13,6 @@ const newsSchema = new mongoose.Schema(
       unique: true,
       lowercase: true,
     },
-    excerpt: {
-      type: String,
-      required: [true, 'Excerpt is required'],
-      maxlength: 300,
-    },
     content: {
       type: String,
       required: [true, 'Content is required'],
@@ -50,17 +45,14 @@ const newsSchema = new mongoose.Schema(
       default: Date.now,
     },
     category: {
-      type: String,
-      default: 'General',
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Category',
+      required: [true, 'Category is required'],
     },
     status: {
       type: String,
       enum: ['draft', 'published'],
       default: 'draft',
-    },
-    featured: {
-      type: Boolean,
-      default: false,
     },
   },
   {
@@ -72,7 +64,6 @@ newsSchema.index({ slug: 1 }, { unique: true });
 newsSchema.index({ status: 1 });
 newsSchema.index({ category: 1 });
 newsSchema.index({ publishedAt: -1 });
-newsSchema.index({ featured: 1 });
 
 /**
  * Generate a URL-friendly slug from a title.

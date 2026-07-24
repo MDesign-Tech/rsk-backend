@@ -1,12 +1,17 @@
 const Opportunity = require('../models/Opportunity');
+const OpportunityType = require('../models/OpportunityType');
 
 // Build a mongoose filter + sort from the shared list query params.
-const buildListQuery = (query, { forceOpen = false } = {}) => {
+const buildListQuery = (query, { forceVisible = false } = {}) => {
   const filter = {};
 
-  if (forceOpen) {
-    filter.status = 'Open';
-  } else if (query.status) {
+  if (forceVisible) {
+    filter.visible = true;
+  } else if (query.visible !== undefined && query.visible !== '') {
+    filter.visible = query.visible === 'true' || query.visible === true;
+  }
+
+  if (query.status) {
     filter.status = query.status;
   }
 
@@ -18,19 +23,16 @@ const buildListQuery = (query, { forceOpen = false } = {}) => {
     filter.category = query.category;
   }
 
-  if (query.featured !== undefined && query.featured !== '') {
-    filter.featured = query.featured === 'true' || query.featured === true;
-  }
-
   if (query.search) {
     filter.$or = [
       { title: { $regex: query.search, $options: 'i' } },
-      { 'organization.name': { $regex: query.search, $options: 'i' } },
+      { org: { $regex: query.search, $options: 'i' } },
+      { description: { $regex: query.search, $options: 'i' } },
     ];
   }
 
-  // Sort: support "-field" for descending, default to -publishedAt.
-  let sort = { publishedAt: -1 };
+  // Sort: support "-field" for descending, default to -date.
+  let sort = { date: -1 };
   if (query.sort) {
     const field = query.sort.replace(/^-/, '');
     const direction = query.sort.startsWith('-') ? -1 : 1;
@@ -40,17 +42,21 @@ const buildListQuery = (query, { forceOpen = false } = {}) => {
   return { filter, sort };
 };
 
-// GET /api/opportunities/public
-const listPublicOpportunities = async (req, res) => {
+// GET /api/opportunities  (admin list)
+const listOpportunities = async (req, res) => {
   try {
     const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 20;
-    const { filter, sort } = buildListQuery(req.query, { forceOpen: true });
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const { filter, sort } = buildListQuery(req.query);
 
     const skip = (page - 1) * limit;
 
     const [opportunities, total] = await Promise.all([
-      Opportunity.find(filter).sort(sort).skip(skip).limit(limit),
+      Opportunity.find(filter)
+        .populate('type')
+        .sort(sort)
+        .skip(skip)
+        .limit(limit),
       Opportunity.countDocuments(filter),
     ]);
 
@@ -58,6 +64,48 @@ const listPublicOpportunities = async (req, res) => {
 
     return res.status(200).json({
       success: true,
+      message: 'Opportunities retrieved successfully',
+      data: {
+        opportunities,
+        total,
+        page,
+        limit,
+        totalPages,
+      },
+    });
+  } catch (error) {
+    console.error('List opportunities error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to retrieve opportunities',
+      errors: [error.message || 'Unknown error'],
+    });
+  }
+};
+
+// GET /api/opportunities/public  (public list, visible only)
+const listPublicOpportunities = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const { filter, sort } = buildListQuery(req.query, { forceVisible: true });
+
+    const skip = (page - 1) * limit;
+
+    const [opportunities, total] = await Promise.all([
+      Opportunity.find(filter)
+        .populate('type')
+        .sort(sort)
+        .skip(skip)
+        .limit(limit),
+      Opportunity.countDocuments(filter),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Opportunities retrieved successfully',
       data: {
         opportunities,
         total,
@@ -71,388 +119,345 @@ const listPublicOpportunities = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Failed to retrieve opportunities',
+      errors: [error.message || 'Unknown error'],
     });
   }
 };
 
-// GET /api/opportunities/admin
-const listAdminOpportunities = async (req, res) => {
-  try {
-    const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 20;
-    const { filter, sort } = buildListQuery(req.query);
-
-    const skip = (page - 1) * limit;
-
-    const [opportunities, total] = await Promise.all([
-      Opportunity.find(filter).sort(sort).skip(skip).limit(limit),
-      Opportunity.countDocuments(filter),
-    ]);
-
-    const totalPages = Math.ceil(total / limit);
-
-    return res.status(200).json({
-      success: true,
-      data: {
-        opportunities,
-        total,
-        page,
-        limit,
-        totalPages,
-      },
-    });
-  } catch (error) {
-    console.error('List admin opportunities error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to retrieve opportunities',
-    });
-  }
-};
-
-// GET /api/opportunities/:id
+// GET /api/opportunities/:id  (admin)
 const getOpportunityById = async (req, res) => {
   try {
-    const opportunity = await Opportunity.findById(req.params.id);
+    const opportunity = await Opportunity.findById(req.params.id).populate('type');
 
     if (!opportunity) {
       return res.status(404).json({
         success: false,
         message: 'Opportunity not found',
+        errors: ['No opportunity found with this ID'],
       });
     }
 
     return res.status(200).json({
       success: true,
-      data: opportunity,
+      message: 'Opportunity retrieved successfully',
+      data: { opportunity },
     });
   } catch (error) {
     console.error('Get opportunity by id error:', error);
     return res.status(500).json({
       success: false,
       message: 'Failed to retrieve opportunity',
+      errors: [error.message || 'Unknown error'],
     });
   }
 };
 
-// GET /api/opportunities/slug/:slug
+// GET /api/opportunities/slug/:slug  (public)
 const getOpportunityBySlug = async (req, res) => {
   try {
     const opportunity = await Opportunity.findOne({
       slug: req.params.slug,
-      status: 'Open',
-    });
+      visible: true,
+    }).populate('type');
 
     if (!opportunity) {
       return res.status(404).json({
         success: false,
         message: 'Opportunity not found',
+        errors: ['No opportunity found with this slug'],
       });
     }
 
     return res.status(200).json({
       success: true,
-      data: opportunity,
+      message: 'Opportunity retrieved successfully',
+      data: { opportunity },
     });
   } catch (error) {
     console.error('Get opportunity by slug error:', error);
     return res.status(500).json({
       success: false,
       message: 'Failed to retrieve opportunity',
+      errors: [error.message || 'Unknown error'],
     });
   }
 };
 
-// GET /api/opportunities/featured
-const getFeaturedOpportunities = async (req, res) => {
+// GET /api/opportunities/category/:category  (public)
+const getOpportunitiesByCategory = async (req, res) => {
   try {
-    const limit = parseInt(req.query.limit, 10) || 3;
-
     const opportunities = await Opportunity.find({
-      featured: true,
-      status: 'Open',
+      category: req.params.category,
+      visible: true,
     })
-      .sort({ publishedAt: -1 })
-      .limit(limit);
+      .populate('type')
+      .sort({ date: -1 });
 
     return res.status(200).json({
       success: true,
-      data: opportunities,
+      message: 'Opportunities retrieved successfully',
+      data: { opportunities },
     });
   } catch (error) {
-    console.error('Get featured opportunities error:', error);
+    console.error('Get opportunities by category error:', error);
     return res.status(500).json({
       success: false,
-      message: 'Failed to retrieve featured opportunities',
+      message: 'Failed to retrieve opportunities',
+      errors: [error.message || 'Unknown error'],
     });
   }
 };
 
-// POST /api/opportunities
+// GET /api/opportunities/type/:typeId  (public)
+const getOpportunitiesByType = async (req, res) => {
+  try {
+    const opportunities = await Opportunity.find({
+      type: req.params.typeId,
+      visible: true,
+    })
+      .populate('type')
+      .sort({ date: -1 });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Opportunities retrieved successfully',
+      data: { opportunities },
+    });
+  } catch (error) {
+    console.error('Get opportunities by type error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to retrieve opportunities',
+      errors: [error.message || 'Unknown error'],
+    });
+  }
+};
+
+// GET /api/opportunities/types  (public - list all opportunity types)
+const getOpportunityTypes = async (req, res) => {
+  try {
+    const types = await OpportunityType.find().sort({ name: 1 });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Opportunity types retrieved successfully',
+      data: { types },
+    });
+  } catch (error) {
+    console.error('Get opportunity types error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to retrieve opportunity types',
+      errors: [error.message || 'Unknown error'],
+    });
+  }
+};
+
+// POST /api/opportunities  (create)
 const createOpportunity = async (req, res) => {
   try {
-    const {
-      type,
-      title,
-      org,
-      date,
-      status,
-      visible,
-      shortDescription,
-      description,
-      category,
-      location,
-      employmentType,
-      salary,
-      budget,
-      contactEmail,
-      contactPhone,
-      requirements,
-      benefits,
-      featured,
-      image,
-    } = req.body;
+    const { title, type, org, description, category, location, date, image, imagePublicId, status, visible } = req.body;
 
-    // Generate slug
     const baseSlug = Opportunity.generateSlug(title);
     const slug = await Opportunity.generateUniqueSlug(baseSlug);
 
-    // Parse JSON strings for arrays
-    let requirementsArray = [];
-    let benefitsArray = [];
-
-    if (requirements) {
-      try {
-        requirementsArray = JSON.parse(requirements);
-        if (!Array.isArray(requirementsArray)) {
-          requirementsArray = [String(requirementsArray)];
-        }
-      } catch {
-        requirementsArray = [String(requirements)];
-      }
-    }
-
-    if (benefits) {
-      try {
-        benefitsArray = JSON.parse(benefits);
-        if (!Array.isArray(benefitsArray)) {
-          benefitsArray = [String(benefitsArray)];
-        }
-      } catch {
-        benefitsArray = [String(benefits)];
-      }
-    }
-
-    // Map form status to model status
-    const opportunityStatus = status === 'active' ? 'Open' : 'Closed';
-
     const opportunity = new Opportunity({
-      type,
       title,
       slug,
-      organization: {
-        name: org,
-      },
-      shortDescription,
-      description,
-      category,
-      location,
-      employmentType: employmentType || null,
-      salary: salary || null,
-      budget: budget || null,
-      deadline: new Date(date),
-      publishedAt: new Date(),
-      contact: {
-        email: contactEmail,
-        phone: contactPhone,
-      },
-      requirements: requirementsArray,
-      benefits: benefitsArray,
-      featured: featured === 'true' || featured === true,
-      status: opportunityStatus,
-      visible: visible === 'true' || visible === true,
-      views: 0,
-      applicants: null,
+      type,
+      org,
+      description: description || '',
+      category: category || 'General',
+      location: location || '',
+      date: new Date(date),
       image: image || null,
+      imagePublicId: imagePublicId || null,
+      status: status || 'Open',
+      visible: visible !== undefined ? visible : true,
+      publishedAt: new Date(),
     });
 
     await opportunity.save();
+    await opportunity.populate('type');
 
     return res.status(201).json({
       success: true,
-      data: opportunity,
+      message: 'Opportunity created successfully',
+      data: { opportunity },
     });
   } catch (error) {
     console.error('Create opportunity error:', error);
     return res.status(500).json({
       success: false,
       message: 'Failed to create opportunity',
+      errors: [error.message || 'Unknown error'],
     });
   }
 };
 
-// PUT /api/opportunities/:id
+// PUT /api/opportunities/:id  (update, partial)
 const updateOpportunity = async (req, res) => {
+  const opportunity = await Opportunity.findById(req.params.id);
+
+  if (!opportunity) {
+    return res.status(404).json({
+      success: false,
+      message: 'Opportunity not found',
+      errors: ['No opportunity found with this ID'],
+    });
+  }
+
   try {
-    const opportunity = await Opportunity.findById(req.params.id);
+    const { title, type, org, description, category, location, date, image, imagePublicId, status, visible } = req.body;
 
-    if (!opportunity) {
-      return res.status(404).json({
-        success: false,
-        message: 'Opportunity not found',
-      });
-    }
-
-    const {
-      type,
-      title,
-      org,
-      date,
-      status,
-      visible,
-      shortDescription,
-      description,
-      category,
-      location,
-      employmentType,
-      salary,
-      budget,
-      contactEmail,
-      contactPhone,
-      requirements,
-      benefits,
-      featured,
-      image,
-    } = req.body;
-
+    if (title !== undefined) opportunity.title = title;
     if (type !== undefined) opportunity.type = type;
-    if (shortDescription !== undefined) opportunity.shortDescription = shortDescription;
+    if (org !== undefined) opportunity.org = org;
     if (description !== undefined) opportunity.description = description;
     if (category !== undefined) opportunity.category = category;
     if (location !== undefined) opportunity.location = location;
-    if (employmentType !== undefined) opportunity.employmentType = employmentType || null;
-    if (salary !== undefined) opportunity.salary = salary || null;
-    if (budget !== undefined) opportunity.budget = budget || null;
-    if (contactEmail !== undefined) opportunity.contact.email = contactEmail;
-    if (contactPhone !== undefined) opportunity.contact.phone = contactPhone;
-    if (featured !== undefined) opportunity.featured = featured === 'true' || featured === true;
-    if (visible !== undefined) opportunity.visible = visible === 'true' || visible === true;
     if (image !== undefined) opportunity.image = image;
-
-    if (org !== undefined) {
-      opportunity.organization.name = org;
-    }
+    if (imagePublicId !== undefined) opportunity.imagePublicId = imagePublicId;
+    if (status !== undefined) opportunity.status = status;
+    if (visible !== undefined) opportunity.visible = visible;
 
     if (date !== undefined) {
-      opportunity.deadline = new Date(date);
-    }
-
-    if (status !== undefined) {
-      opportunity.status = status === 'active' ? 'Open' : 'Closed';
-    }
-
-    if (requirements !== undefined) {
-      try {
-        const parsed = JSON.parse(requirements);
-        opportunity.requirements = Array.isArray(parsed) ? parsed : [String(parsed)];
-      } catch {
-        opportunity.requirements = [String(requirements)];
-      }
-    }
-
-    if (benefits !== undefined) {
-      try {
-        const parsed = JSON.parse(benefits);
-        opportunity.benefits = Array.isArray(parsed) ? parsed : [String(parsed)];
-      } catch {
-        opportunity.benefits = [String(benefits)];
-      }
+      opportunity.date = new Date(date);
     }
 
     if (title !== undefined) {
-      opportunity.title = title;
       const baseSlug = Opportunity.generateSlug(title);
       opportunity.slug = await Opportunity.generateUniqueSlug(baseSlug, opportunity._id);
     }
 
-    opportunity.updatedAt = new Date();
     await opportunity.save();
+    await opportunity.populate('type');
 
     return res.status(200).json({
       success: true,
-      data: opportunity,
+      message: 'Opportunity updated successfully',
+      data: { opportunity },
     });
   } catch (error) {
     console.error('Update opportunity error:', error);
     return res.status(500).json({
       success: false,
       message: 'Failed to update opportunity',
+      errors: [error.message || 'Unknown error'],
+    });
+  }
+};
+
+// DELETE /api/opportunities/type/:typeId  (delete all opportunities of a type)
+const deleteOpportunitiesByType = async (req, res) => {
+  try {
+    const result = await Opportunity.deleteMany({ type: req.params.typeId });
+
+    return res.status(200).json({
+      success: true,
+      message: `Deleted ${result.deletedCount} opportunities`,
+      data: { deletedCount: result.deletedCount },
+    });
+  } catch (error) {
+    console.error('Delete opportunities by type error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to delete opportunities by type',
+      errors: [error.message || 'Unknown error'],
     });
   }
 };
 
 // DELETE /api/opportunities/:id
 const deleteOpportunity = async (req, res) => {
+  const opportunity = await Opportunity.findById(req.params.id);
+
+  if (!opportunity) {
+    return res.status(404).json({
+      success: false,
+      message: 'Opportunity not found',
+      errors: ['No opportunity found with this ID'],
+    });
+  }
+
   try {
-    const opportunity = await Opportunity.findById(req.params.id);
-
-    if (!opportunity) {
-      return res.status(404).json({
-        success: false,
-        message: 'Opportunity not found',
-      });
-    }
-
     await opportunity.deleteOne();
 
-    return res.status(204).send();
+    return res.status(200).json({
+      success: true,
+      message: 'Opportunity deleted successfully',
+      data: {},
+    });
   } catch (error) {
     console.error('Delete opportunity error:', error);
     return res.status(500).json({
       success: false,
       message: 'Failed to delete opportunity',
+      errors: [error.message || 'Unknown error'],
     });
   }
 };
 
 // PATCH /api/opportunities/:id/status
 const toggleOpportunityStatus = async (req, res) => {
-  try {
-    const opportunity = await Opportunity.findById(req.params.id);
+  const opportunity = await Opportunity.findById(req.params.id);
 
-    if (!opportunity) {
-      return res.status(404).json({
-        success: false,
-        message: 'Opportunity not found',
-      });
-    }
-
-    const { status } = req.body;
-    opportunity.status = status === 'active' ? 'Open' : status === 'closed' ? 'Closed' : status;
-    opportunity.updatedAt = new Date();
-    await opportunity.save();
-
-    return res.status(200).json({
-      success: true,
-      data: opportunity,
-    });
-  } catch (error) {
-    console.error('Toggle opportunity status error:', error);
-    return res.status(500).json({
+  if (!opportunity) {
+    return res.status(404).json({
       success: false,
-      message: 'Failed to update opportunity status',
+      message: 'Opportunity not found',
+      errors: ['No opportunity found with this ID'],
     });
   }
+
+  const { status } = req.body;
+  opportunity.status = status;
+
+  await opportunity.save();
+  await opportunity.populate('type');
+
+  return res.status(200).json({
+    success: true,
+    message: 'Opportunity status updated successfully',
+    data: { opportunity },
+  });
+};
+
+// PATCH /api/opportunities/:id/visibility
+const toggleOpportunityVisibility = async (req, res) => {
+  const opportunity = await Opportunity.findById(req.params.id);
+
+  if (!opportunity) {
+    return res.status(404).json({
+      success: false,
+      message: 'Opportunity not found',
+      errors: ['No opportunity found with this ID'],
+    });
+  }
+
+  opportunity.visible = req.body.visible;
+  await opportunity.save();
+  await opportunity.populate('type');
+
+  return res.status(200).json({
+    success: true,
+    message: 'Opportunity visibility updated successfully',
+    data: { opportunity },
+  });
 };
 
 module.exports = {
+  listOpportunities,
   listPublicOpportunities,
-  listAdminOpportunities,
   getOpportunityById,
   getOpportunityBySlug,
-  getFeaturedOpportunities,
+  getOpportunitiesByCategory,
+  getOpportunitiesByType,
+  getOpportunityTypes,
   createOpportunity,
   updateOpportunity,
   deleteOpportunity,
+  deleteOpportunitiesByType,
   toggleOpportunityStatus,
+  toggleOpportunityVisibility,
 };

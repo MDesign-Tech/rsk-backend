@@ -4,28 +4,19 @@ const validateCreateNews = [
   body('title')
     .notEmpty().withMessage('Title is required')
     .trim(),
-  body('excerpt')
-    .notEmpty().withMessage('Excerpt is required')
-    .trim(),
   body('content')
     .notEmpty().withMessage('Content is required'),
   body('category')
     .notEmpty().withMessage('Category is required')
     .trim(),
-  body('author')
+  body('authorId')
     .notEmpty().withMessage('Author is required')
     .isMongoId().withMessage('Author must be a valid team member ID'),
   body('status')
     .optional()
-    .isIn(['draft', 'published', 'archived']).withMessage('Status must be draft, published, or archived'),
-  body('featured')
-    .optional()
-    .isBoolean().withMessage('Featured must be a boolean'),
-  body('readingTime')
-    .optional()
-    .isNumeric().withMessage('Reading time must be a number'),
+    .isIn(['draft', 'published']).withMessage('Status must be draft or published'),
   body('coverImage')
-    .optional()
+    .optional({ nullable: true, empty: true })
     .isURL().withMessage('Cover image must be a valid URL'),
 ];
 
@@ -35,38 +26,27 @@ const validateUpdateNews = [
     .optional()
     .notEmpty().withMessage('Title cannot be empty')
     .trim(),
-  body('excerpt')
-    .optional()
-    .notEmpty().withMessage('Excerpt cannot be empty')
-    .trim(),
   body('content')
     .optional()
     .notEmpty().withMessage('Content cannot be empty'),
   body('category')
     .optional()
-    .notEmpty().withMessage('Category cannot be empty')
     .trim(),
-  body('author')
+  body('authorId')
     .optional()
     .isMongoId().withMessage('Author must be a valid team member ID'),
   body('status')
     .optional()
-    .isIn(['draft', 'published', 'archived']).withMessage('Status must be draft, published, or archived'),
-  body('featured')
-    .optional()
-    .isBoolean().withMessage('Featured must be a boolean'),
-  body('readingTime')
-    .optional()
-    .isNumeric().withMessage('Reading time must be a number'),
+    .isIn(['draft', 'published']).withMessage('Status must be draft or published'),
   body('coverImage')
-    .optional()
+    .optional({ nullable: true, empty: true })
     .isURL().withMessage('Cover image must be a valid URL'),
 ];
 
 const validateStatusToggle = [
   body('status')
     .notEmpty().withMessage('Status is required')
-    .isIn(['draft', 'published', 'archived']).withMessage('Status must be draft, published, or archived'),
+    .isIn(['draft', 'published']).withMessage('Status must be draft or published'),
 ];
 
 module.exports = { validateCreateNews, validateUpdateNews, validateStatusToggle };

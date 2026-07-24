@@ -20,7 +20,7 @@ const validateWhyBecomeMember = [
     .optional()
     .isBoolean().withMessage('Point visible must be a boolean'),
   body('points.*.image')
-    .optional()
+    .optional({ nullable: true, empty: true })
     .isURL().withMessage('Point image must be a valid URL'),
   body('points.*.imagePublicId')
     .optional()
@@ -41,7 +41,7 @@ const validateWhyBecomeMemberPoint = [
     .optional()
     .isBoolean().withMessage('Point visible must be a boolean'),
   body('image')
-    .optional()
+    .optional({ nullable: true, empty: true })
     .isURL().withMessage('Point image must be a valid URL'),
   body('imagePublicId')
     .optional()

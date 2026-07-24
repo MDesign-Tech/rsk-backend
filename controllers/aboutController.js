@@ -60,7 +60,7 @@ const toggleSocialMediaVisibility = async (req, res) => {
   }
 
   const platform = req.params.platform;
-  const validPlatforms = ['facebook', 'instagram', 'whatsapp', 'x', 'linkedin', 'youtube'];
+  const validPlatforms = ['facebook', 'instagram', 'whatsapp', 'x', 'linkedin', 'youtube', 'tiktok', 'snapchat'];
 
   if (!validPlatforms.includes(platform)) {
     return res.status(400).json({

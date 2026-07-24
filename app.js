@@ -19,7 +19,9 @@ const teamSectionRoutes = require('./routes/teamSectionRoutes');
 const contactRoutes = require('./routes/contactRoutes');
 const websiteRoute = require('./routes/website.routes')
 const newsRoutes = require('./routes/newsRoutes');
+const categoryRoutes = require('./routes/categoryRoutes');
 const opportunityRoutes = require('./routes/opportunityRoutes');
+const opportunityTypeRoutes = require('./routes/opportunityTypeRoutes');
 const whyJoinUsRoutes = require('./routes/whyJoinUsRoutes');
 const whyBecomeMemberRoutes = require('./routes/whyBecomeMemberRoutes');
 
@@ -43,7 +45,7 @@ app.use(async (req, res, next) => {
     next(err);
   }
 });
-
+  
 app.use(
   helmet({
     crossOriginResourcePolicy: false,
@@ -77,7 +79,9 @@ app.use('/api/team-sections', teamSectionRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/website', websiteRoute)
 app.use('/api/news', newsRoutes);
+app.use('/api/categories', categoryRoutes);
 app.use('/api/opportunities', opportunityRoutes);
+app.use('/api/opportunity-types', opportunityTypeRoutes);
 app.use('/api/why-join-us', whyJoinUsRoutes);
 app.use('/api/why-become-member', whyBecomeMemberRoutes);
 

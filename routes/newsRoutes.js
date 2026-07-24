@@ -4,7 +4,6 @@ const {
   listPublicArticles,
   getArticleById,
   getArticleBySlug,
-  getFeaturedArticles,
   getArticlesByCategory,
   createArticle,
   updateArticle,
@@ -24,8 +23,7 @@ const router = express.Router();
 // ---- Public routes (no auth) ----
 router.get('/public', listPublicArticles);
 router.get('/public/:slug', getArticleBySlug);
-router.get('/featured', getFeaturedArticles);
-router.get('/category/:category', getArticlesByCategory);
+router.get('/category/:categoryId', getArticlesByCategory);
 
 // ---- Admin routes (auth required) ----
 router.use(protect);

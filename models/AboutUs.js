@@ -133,6 +133,26 @@ const aboutUsSchema = new mongoose.Schema(
           default: true,
         },
       },
+      tiktok: {
+        href: {
+          type: String,
+          default: null,
+        },
+        visible: {
+          type: Boolean,
+          default: true,
+        },
+      },
+      snapchat: {
+        href: {
+          type: String,
+          default: null,
+        },
+        visible: {
+          type: Boolean,
+          default: true,
+        },
+      },
     },
 
     visible: {

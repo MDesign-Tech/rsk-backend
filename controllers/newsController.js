@@ -1,5 +1,20 @@
-const NewsArticle = require('../models/NewsArticle');
+const mongoose = require('mongoose');
+const News = require('../models/News');
+const Category = require('../models/Category');
 const TeamMember = require('../models/TeamMember');
+
+// Resolve a category: accept either a MongoId or a category name.
+const resolveCategory = async (categoryInput) => {
+  if (!categoryInput) return null;
+  // If it looks like a MongoId, use it directly.
+  if (mongoose.Types.ObjectId.isValid(categoryInput)) {
+    const cat = await Category.findById(categoryInput);
+    return cat;
+  }
+  // Otherwise, treat it as a category name.
+  const cat = await Category.findOne({ name: categoryInput });
+  return cat;
+};
 
 // Build a mongoose filter + sort from the shared list query params.
 const buildListQuery = (query, { forcePublished = false } = {}) => {
@@ -15,14 +30,9 @@ const buildListQuery = (query, { forcePublished = false } = {}) => {
     filter.category = query.category;
   }
 
-  if (query.featured !== undefined && query.featured !== '') {
-    filter.featured = query.featured === 'true' || query.featured === true;
-  }
-
   if (query.search) {
     filter.$or = [
       { title: { $regex: query.search, $options: 'i' } },
-      { excerpt: { $regex: query.search, $options: 'i' } },
     ];
   }
 
@@ -47,8 +57,8 @@ const listArticles = async (req, res) => {
     const skip = (page - 1) * limit;
 
     const [articles, total] = await Promise.all([
-      NewsArticle.find(filter).sort(sort).skip(skip).limit(limit),
-      NewsArticle.countDocuments(filter),
+      News.find(filter).sort(sort).skip(skip).limit(limit).populate('category'),
+      News.countDocuments(filter),
     ]);
 
     const totalPages = Math.ceil(total / limit);
@@ -82,8 +92,8 @@ const listPublicArticles = async (req, res) => {
     const skip = (page - 1) * limit;
 
     const [articles, total] = await Promise.all([
-      NewsArticle.find(filter).sort(sort).skip(skip).limit(limit),
-      NewsArticle.countDocuments(filter),
+      News.find(filter).sort(sort).skip(skip).limit(limit).populate('category'),
+      News.countDocuments(filter),
     ]);
 
     const totalPages = Math.ceil(total / limit);
@@ -110,7 +120,7 @@ const listPublicArticles = async (req, res) => {
 // GET /api/news/:id  (admin)
 const getArticleById = async (req, res) => {
   try {
-    const article = await NewsArticle.findById(req.params.id);
+    const article = await News.findById(req.params.id).populate('category');
 
     if (!article) {
       return res.status(404).json({
@@ -135,10 +145,10 @@ const getArticleById = async (req, res) => {
 // GET /api/news/public/:slug  (public)
 const getArticleBySlug = async (req, res) => {
   try {
-    const article = await NewsArticle.findOne({
+    const article = await News.findOne({
       slug: req.params.slug,
       status: 'published',
-    });
+    }).populate('category');
 
     if (!article) {
       return res.status(404).json({
@@ -160,38 +170,13 @@ const getArticleBySlug = async (req, res) => {
   }
 };
 
-// GET /api/news/featured
-const getFeaturedArticles = async (req, res) => {
-  try {
-    const limit = parseInt(req.query.limit, 10) || 3;
-
-    const articles = await NewsArticle.find({
-      featured: true,
-      status: 'published',
-    })
-      .sort({ publishedAt: -1 })
-      .limit(limit);
-
-    return res.status(200).json({
-      success: true,
-      data: { articles },
-    });
-  } catch (error) {
-    console.error('Get featured articles error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to retrieve featured articles',
-    });
-  }
-};
-
-// GET /api/news/category/:category  (public)
+// GET /api/news/category/:categoryId  (public)
 const getArticlesByCategory = async (req, res) => {
   try {
-    const articles = await NewsArticle.find({
-      category: req.params.category,
+    const articles = await News.find({
+      category: req.params.categoryId,
       status: 'published',
-    }).sort({ publishedAt: -1 });
+    }).sort({ publishedAt: -1 }).populate('category');
 
     return res.status(200).json({
       success: true,
@@ -223,9 +208,9 @@ const resolveAuthor = async (authorId) => {
 // POST /api/news  (create)
 const createArticle = async (req, res) => {
   try {
-    const { title, excerpt, content, category, author, status, featured, readingTime, coverImage } = req.body;
+    const { title, content, category, authorId, status, coverImage } = req.body;
 
-    const authorData = await resolveAuthor(author);
+    const authorData = await resolveAuthor(authorId);
     if (!authorData) {
       return res.status(400).json({
         success: false,
@@ -233,23 +218,24 @@ const createArticle = async (req, res) => {
       });
     }
 
-    const baseSlug = NewsArticle.generateSlug(title);
-    const slug = await NewsArticle.generateUniqueSlug(baseSlug);
+    const categoryDoc = await resolveCategory(category);
+    if (!categoryDoc) {
+      return res.status(400).json({
+        success: false,
+        message: 'Category not found',
+      });
+    }
 
-    const article = new NewsArticle({
+    const baseSlug = News.generateSlug(title);
+    const slug = await News.generateUniqueSlug(baseSlug);
+
+    const article = new News({
       title,
       slug,
-      excerpt,
       content,
-      category,
+      category: categoryDoc._id,
       author: authorData,
       status: status || 'published',
-      featured: featured === 'true' || featured === true,
-      readingTime: readingTime ? Number(readingTime) : 5,
-      views: 0,
-      likes: 0,
-      shares: 0,
-      commentsCount: 0,
       coverImage: coverImage || null,
     });
 
@@ -258,6 +244,7 @@ const createArticle = async (req, res) => {
     }
 
     await article.save();
+    await article.populate('category');
 
     return res.status(201).json({
       success: true,
@@ -275,7 +262,7 @@ const createArticle = async (req, res) => {
 // PUT /api/news/:id  (update, partial)
 const updateArticle = async (req, res) => {
   try {
-    const article = await NewsArticle.findById(req.params.id);
+    const article = await News.findById(req.params.id);
 
     if (!article) {
       return res.status(404).json({
@@ -284,18 +271,25 @@ const updateArticle = async (req, res) => {
       });
     }
 
-    const { title, excerpt, content, category, author, status, featured, readingTime, coverImage } = req.body;
+    const { title, content, category, authorId, status, coverImage } = req.body;
 
     if (title !== undefined) article.title = title;
-    if (excerpt !== undefined) article.excerpt = excerpt;
     if (content !== undefined) article.content = content;
-    if (category !== undefined) article.category = category;
-    if (featured !== undefined) article.featured = featured === 'true' || featured === true;
-    if (readingTime !== undefined) article.readingTime = Number(readingTime);
     if (coverImage !== undefined) article.coverImage = coverImage;
 
-    if (author !== undefined) {
-      const authorData = await resolveAuthor(author);
+    if (category !== undefined) {
+      const categoryDoc = await resolveCategory(category);
+      if (!categoryDoc) {
+        return res.status(400).json({
+          success: false,
+          message: 'Category not found',
+        });
+      }
+      article.category = categoryDoc._id;
+    }
+
+    if (authorId !== undefined) {
+      const authorData = await resolveAuthor(authorId);
       if (!authorData) {
         return res.status(400).json({
           success: false,
@@ -306,8 +300,8 @@ const updateArticle = async (req, res) => {
     }
 
     if (title !== undefined) {
-      const baseSlug = NewsArticle.generateSlug(title);
-      article.slug = await NewsArticle.generateUniqueSlug(baseSlug, article._id);
+      const baseSlug = News.generateSlug(title);
+      article.slug = await News.generateUniqueSlug(baseSlug, article._id);
     }
 
     if (status !== undefined) {
@@ -319,6 +313,7 @@ const updateArticle = async (req, res) => {
 
     article.updatedAt = new Date();
     await article.save();
+    await article.populate('category');
 
     return res.status(200).json({
       success: true,
@@ -336,7 +331,7 @@ const updateArticle = async (req, res) => {
 // DELETE /api/news/:id
 const deleteArticle = async (req, res) => {
   try {
-    const article = await NewsArticle.findById(req.params.id);
+    const article = await News.findById(req.params.id);
 
     if (!article) {
       return res.status(404).json({
@@ -363,7 +358,7 @@ const deleteArticle = async (req, res) => {
 // PATCH /api/news/:id/status
 const toggleArticleStatus = async (req, res) => {
   try {
-    const article = await NewsArticle.findById(req.params.id);
+    const article = await News.findById(req.params.id);
 
     if (!article) {
       return res.status(404).json({
@@ -426,7 +421,6 @@ module.exports = {
   listPublicArticles,
   getArticleById,
   getArticleBySlug,
-  getFeaturedArticles,
   getArticlesByCategory,
   createArticle,
   updateArticle,

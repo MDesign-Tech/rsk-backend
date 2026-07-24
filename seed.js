@@ -7,9 +7,12 @@ const HeroContent = require('./models/HeroContent');
 const Partner = require('./models/Partner');
 const TeamSection = require('./models/TeamSection');
 const TeamMember = require('./models/TeamMember');
-const NewsArticle = require('./models/NewsArticle');
+const News = require('./models/News');
+const Category = require('./models/Category');
 const WhyJoinUs = require('./models/WhyJoinUs');
 const WhyBecomeMember = require('./models/WhyBecomeMember');
+const OpportunityType = require('./models/OpportunityType');
+const Opportunity = require('./models/Opportunity');
 
 const DEFAULT_ABOUT = {
   title: "About RSK Associates",
@@ -77,6 +80,20 @@ const DEFAULT_ABOUT = {
       href: null,
       visible: true,
     },
+    tiktok: {
+      href: null,
+      visible: true,
+    },
+    snapchat: {
+      href: null,
+      visible: true,
+    },
+  },
+
+  ourStory: {
+    title: "Our Story",
+    description:
+      "RSK Associates was founded with a vision to empower businesses through expert financial guidance. From humble beginnings, we have grown into a trusted corporate advisory collective, helping organizations navigate complex financial landscapes with confidence and integrity.",
   },
 };
 
@@ -181,53 +198,30 @@ const DEFAULT_NEWS = [
   {
     title: "RSK Associates Expands Tax Advisory Services",
     slug: "rsk-associates-expands-tax-advisory-services",
-    excerpt: "We are pleased to announce the expansion of our tax advisory services to include international tax planning for businesses operating across borders.",
     content: "RSK Associates is excited to announce the expansion of our tax advisory services. Our new international tax planning division will help businesses navigate cross-border tax regulations and optimize their global tax positions. This expansion reflects our commitment to providing comprehensive financial solutions to our clients.",
     coverImage: null,
-    category: "Finance",
+    category: null,
     author: {
-      name: "RSK Admin",
-      role: "Administrator",
+      name: "RSK associates",
+      role: "Adminr",
       avatar: null,
     },
     status: "published",
-    featured: true,
-    readingTime: 3,
     publishedAt: new Date('2024-01-15'),
   },
   {
     title: "New Business Management Consulting Package Launched",
     slug: "new-business-management-consulting-package-launched",
-    excerpt: "Introducing our new comprehensive business management consulting package designed for SMEs looking to streamline operations and drive growth.",
     content: "Our new business management consulting package combines strategic planning, operational efficiency analysis, and performance monitoring to help SMEs achieve sustainable growth. The package includes monthly advisory sessions, custom dashboards, and actionable recommendations.",
     coverImage: null,
-    category: "Business",
+    category: null,
     author: {
-      name: "RSK Admin",
-      role: "Administrator",
+      name: "RSK associates",
+      role: "Admin",
       avatar: null,
     },
     status: "published",
-    featured: false,
-    readingTime: 4,
     publishedAt: new Date('2024-02-20'),
-  },
-  {
-    title: "RSK Associates Partners with Local Financial Institutions",
-    slug: "rsk-associates-partners-with-local-financial-institutions",
-    excerpt: "We have formed strategic partnerships with leading local financial institutions to provide our clients with better access to funding and financial products.",
-    content: "RSK Associates has signed memoranda of understanding with three leading local financial institutions. These partnerships will enable our clients to access preferential financing terms, specialized financial products, and streamlined loan application processes.",
-    coverImage: null,
-    category: "Business",
-    author: {
-      name: "RSK Admin",
-      role: "Administrator",
-      avatar: null,
-    },
-    status: "published",
-    featured: false,
-    readingTime: 2,
-    publishedAt: new Date('2024-03-10'),
   },
 ];
 
@@ -337,6 +331,129 @@ const DEFAULT_TEAM_SECTIONS = [
   },
 ];
 
+const DEFAULT_OPPORTUNITIES = [
+  {
+    title: "Supply and Installation of Solar Power Systems",
+    type: "Tender",
+    org: "Ministry of Infrastructure",
+    description: "Supply and installation of solar power systems for public buildings across the country.",
+    category: "Infrastructure",
+    location: "Kigali, Rwanda",
+    date: new Date('2026-07-15'),
+    image: "https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=1200&q=80",
+    status: "Open",
+    visible: true,
+  },
+  {
+    title: "Construction of District Health Centers",
+    type: "Tender",
+    org: "Rwanda Biomedical Centre",
+    description: "Construction of 5 district health centers in the Northern Province.",
+    category: "Health",
+    location: "Northern Province, Rwanda",
+    date: new Date('2026-07-12'),
+    image: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1200&q=80",
+    status: "Open",
+    visible: true,
+  },
+  {
+    title: "Senior Financial Analyst",
+    type: "Job",
+    org: "RSK Associates Ltd",
+    description: "We are looking for a Senior Financial Analyst to join our growing team.",
+    category: "Finance",
+    location: "Kigali, Rwanda",
+    date: new Date('2026-07-10'),
+    image: "https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=1200&q=80",
+    status: "Open",
+    visible: true,
+  },
+  {
+    title: "Frontend React Developer",
+    type: "Job",
+    org: "Tech Rwanda",
+    description: "Join our team as a Frontend React Developer to build amazing web applications.",
+    category: "Technology",
+    location: "Kigali, Rwanda",
+    date: new Date('2026-07-08'),
+    image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80",
+    status: "Open",
+    visible: true,
+  },
+  {
+    title: "Procurement of ICT Equipment for Public Schools",
+    type: "Tender",
+    org: "Ministry of Education",
+    description: "Procurement of ICT equipment including computers, projectors, and networking equipment for 50 public schools.",
+    category: "Education",
+    location: "Kigali, Rwanda",
+    date: new Date('2026-07-05'),
+    image: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80",
+    status: "Open",
+    visible: true,
+  },
+  {
+    title: "Human Resources Officer",
+    type: "Job",
+    org: "Bank of Kigali",
+    description: "Looking for an experienced HR Officer to manage recruitment and employee relations.",
+    category: "Human Resources",
+    location: "Kigali, Rwanda",
+    date: new Date('2026-07-03'),
+    image: "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1200&q=80",
+    status: "Open",
+    visible: true,
+  },
+  {
+    title: "Supply of Medical Laboratory Equipment",
+    type: "Tender",
+    org: "King Faisal Hospital",
+    description: "Supply of advanced medical laboratory equipment for the hospital's diagnostic center.",
+    category: "Health",
+    location: "Kigali, Rwanda",
+    date: new Date('2026-06-30'),
+    image: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1200&q=80",
+    status: "Open",
+    visible: true,
+  },
+  {
+    title: "Digital Marketing Specialist",
+    type: "Job",
+    org: "Rwanda Convention Bureau",
+    description: "Seeking a creative Digital Marketing Specialist to drive our online presence.",
+    category: "Marketing",
+    location: "Kigali, Rwanda",
+    date: new Date('2026-06-28'),
+    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80",
+    status: "Open",
+    visible: true,
+  },
+  {
+    title: "Road Rehabilitation and Maintenance Works",
+    type: "Tender",
+    org: "Rwanda Transport Development Agency",
+    description: "Rehabilitation and maintenance of 50km of rural roads in the Southern Province.",
+    category: "Infrastructure",
+    location: "Southern Province, Rwanda",
+    date: new Date('2026-06-25'),
+    image: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1200&q=80",
+    status: "Open",
+    visible: true,
+  },
+  {
+    title: "Project Manager",
+    type: "Job",
+    org: "United Nations Development Programme",
+    description: "UNDP is seeking a Project Manager for the sustainable development program.",
+    category: "Development",
+    location: "Kigali, Rwanda",
+    date: new Date('2026-06-22'),
+    image: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1200&q=80",
+    status: "Open",
+    visible: true,
+  },
+];
+
 const seedData = async () => {
   try {
     const adminExists = await User.findOne({ email: 'admin@rskassociates.com' });
@@ -404,12 +521,42 @@ const seedData = async () => {
       console.log('Partner data already exists');
     }
 
+    // Seed default categories
+    const defaultCategories = [
+      { name: 'Finance' },
+      { name: 'Business' },
+      { name: 'Technology' },
+      { name: 'Events' },
+      { name: 'General' },
+    ];
+    const existingCategoryCount = await Category.countDocuments();
+    if (existingCategoryCount === 0) {
+      const createdCategories = await Category.insertMany(defaultCategories);
+      console.log('Default categories created successfully');
+      // Map category names to IDs for news seeding
+      const categoryMap = {};
+      createdCategories.forEach((c) => {
+        categoryMap[c.name] = c._id;
+      });
+      DEFAULT_NEWS.forEach((news) => {
+        news.category = categoryMap[news.category] || categoryMap['General'];
+      });
+    } else {
+      console.log('Categories already exist');
+      const categories = await Category.find();
+      const categoryMap = {};
+      categories.forEach((c) => {
+        categoryMap[c.name] = c._id;
+      });
+      DEFAULT_NEWS.forEach((news) => {
+        news.category = categoryMap[news.category] || categoryMap['General'];
+      });
+    }
+
     // Seed a default team member for news author references
     const defaultAuthor = await TeamMember.findOne({ name: 'RSK Admin' });
     if (!defaultAuthor) {
-      DEFAULT_NEWS.forEach((news) => {
-        news.author._id = createdAuthor._id;
-      });
+      console.log('Default team member not found, skipping news seed');
     } else {
       console.log('Default team member already exists');
       // Update news seed data with existing author ID
@@ -418,9 +565,9 @@ const seedData = async () => {
       });
     }
 
-    const newsExists = await NewsArticle.findOne();
+    const newsExists = await News.findOne();
     if (!newsExists) {
-      await NewsArticle.insertMany(DEFAULT_NEWS);
+      await News.insertMany(DEFAULT_NEWS);
       console.log('Default news data created successfully');
     } else {
       console.log('News data already exists');
@@ -450,6 +597,53 @@ const seedData = async () => {
       } else {
         console.log(`Team section "${sectionData.name}" already exists`);
       }
+    }
+
+    // Seed opportunity types only if none exist
+    const existingTypeCount = await OpportunityType.countDocuments();
+    if (existingTypeCount === 0) {
+      const defaultTypes = [
+        { name: 'Tender' },
+        { name: 'Job' },
+        { name: 'Internship' },
+        { name: 'Consultancy' },
+        { name: 'Training' },
+        { name: 'Event' },
+        { name: 'RFP' },
+        { name: 'RFQ' },
+        { name: 'EOI' },
+      ];
+      await OpportunityType.insertMany(defaultTypes);
+      console.log('Default opportunity types created successfully');
+    } else {
+      console.log('Opportunity types already exist');
+    }
+
+    // Seed opportunities only if none exist
+    const opportunityExists = await Opportunity.findOne();
+    if (!opportunityExists) {
+      const types = await OpportunityType.find();
+      const typeMap = {};
+      types.forEach((t) => {
+        typeMap[t.name] = t._id;
+      });
+
+      const opportunitiesToInsert = DEFAULT_OPPORTUNITIES.map((opp) => ({
+        ...opp,
+        type: typeMap[opp.type] || types[0]._id,
+        slug: Opportunity.generateSlug(opp.title),
+        publishedAt: new Date(),
+      }));
+
+      // Generate unique slugs
+      for (const opp of opportunitiesToInsert) {
+        opp.slug = await Opportunity.generateUniqueSlug(opp.slug);
+      }
+
+      await Opportunity.insertMany(opportunitiesToInsert);
+      console.log('Default opportunity data created successfully');
+    } else {
+      console.log('Opportunity data already exists');
     }
 
     console.log('All seeds completed successfully');

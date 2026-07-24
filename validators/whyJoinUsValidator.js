@@ -20,7 +20,7 @@ const validateWhyJoinUs = [
     .optional()
     .isBoolean().withMessage('Point visible must be a boolean'),
   body('points.*.image')
-    .optional()
+    .optional({ nullable: true, empty: true })
     .isURL().withMessage('Point image must be a valid URL'),
   body('points.*.imagePublicId')
     .optional()
