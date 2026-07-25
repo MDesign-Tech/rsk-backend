@@ -3,6 +3,7 @@ const { body } = require('express-validator');
 const {
   getUsers,
   getUser,
+  getAvailableMembers,
   createUser,
   updateUser,
   deleteUser,
@@ -16,10 +17,10 @@ const router = express.Router();
 router.use(protect);
 
 router.get('/', getUsers);
+router.get('/available-members', getAvailableMembers);
 router.get('/:id', getUser);
 router.post('/', validateUser, validate, createUser);
 router.put('/:id', validateUser, validate, updateUser);
 router.delete('/:id', deleteUser);
 
 module.exports = router;
-

@@ -1,5 +1,6 @@
 const TeamMember = require('../models/TeamMember');
 const TeamSection = require('../models/TeamSection');
+const User = require('../models/User');
 
 const getTeamMembers = async (req, res) => {
   const teamMembers = await TeamMember.find()
@@ -138,6 +139,15 @@ const updateTeamMember = async (req, res) => {
 
     await teamMember.save();
     await teamMember.populate('section');
+
+    // Sync name to linked user if exists
+    if (teamMember.user && body.name) {
+      const linkedUser = await User.findById(teamMember.user);
+      if (linkedUser) {
+        linkedUser.name = body.name;
+        await linkedUser.save();
+      }
+    }
 
     return res.status(200).json({
       success: true,

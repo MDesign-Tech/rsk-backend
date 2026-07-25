@@ -2,7 +2,7 @@ const { body } = require('express-validator');
 
 const validateUser = [
   body('name')
-    .notEmpty().withMessage('Name is required')
+    .optional()
     .trim()
     .isLength({ min: 2 }).withMessage('Name must be at least 2 characters'),
   body('email')
@@ -14,9 +14,11 @@ const validateUser = [
   body('phone')
     .optional()
     .trim(),
-  body('role')
+  body('memberId')
     .optional()
-    .isIn(['admin']).withMessage('Invalid role'),
+    .isMongoId().withMessage('Invalid member ID'),
 ];
+
+module.exports = { validateUser };
 
 module.exports = { validateUser };

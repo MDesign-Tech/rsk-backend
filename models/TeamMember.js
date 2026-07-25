@@ -4,6 +4,15 @@ const teamMemberSchema = new mongoose.Schema(
   {
     name: {
       type: String,
+      required: [true, 'Member name is required'],
+      trim: true,
+    },
+    department: {
+      type: String,
+      trim: true,
+    },
+    bio: {
+      type: String,
       trim: true,
     },
     image: {
@@ -15,10 +24,6 @@ const teamMemberSchema = new mongoose.Schema(
       default: null,
     },
     title: {
-      type: String,
-      trim: true,
-    },
-    bio: {
       type: String,
       trim: true,
     },
@@ -95,6 +100,15 @@ const teamMemberSchema = new mongoose.Schema(
     order: {
       type: Number,
       default: 0,
+    },
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
     },
   },
   {
