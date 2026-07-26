@@ -1,4 +1,6 @@
 const ContactMessage = require('../models/ContactMessage');
+const Conversation = require('../models/Conversation');
+const Message = require('../models/Message');
 const AboutUs = require('../models/AboutUs');
 const { sendReplyEmail } = require('../src/utils/emailService');
 
@@ -23,12 +25,165 @@ const getCompanyInfo = async () => {
   }
 };
 
+// Find or create conversation by email
+const findOrCreateConversation = async (name, email) => {
+  let conversation = await Conversation.findOne({ clientEmail: email.toLowerCase() });
+  
+  if (!conversation) {
+    conversation = await Conversation.create({
+      clientName: name,
+      clientEmail: email.toLowerCase(),
+    });
+  }
+  
+  return conversation;
+};
+
 const createContactMessage = async (req, res) => {
-  const message = await ContactMessage.create(req.body);
+  const { name, email, message } = req.body;
+  
+  // Find or create conversation
+  const conversation = await findOrCreateConversation(name, email);
+  
+  // Create client message
+  const newMessage = await Message.create({
+    conversation: conversation._id,
+    sender: 'client',
+    message: message.trim(),
+    read: false,
+  });
+  
+  // Update conversation
+  conversation.lastMessage = message.trim();
+  conversation.lastMessageAt = new Date();
+  conversation.unreadCount = (conversation.unreadCount || 0) + 1;
+  await conversation.save();
+  
+  // Also create a ContactMessage for backward compatibility
+  const contactMessage = await ContactMessage.create({
+    name,
+    email,
+    message: message.trim(),
+  });
+  
   return res.status(201).json({
     success: true,
     message: 'Message sent successfully',
-    data: { message },
+    data: { 
+      conversation,
+      message: newMessage,
+      contactMessage 
+    },
+  });
+};
+
+const getConversations = async (req, res) => {
+  const conversations = await Conversation.find().sort({ lastMessageAt: -1 });
+  
+  // Get unread count for each conversation
+  const conversationsWithUnread = await Promise.all(
+    conversations.map(async (conv) => {
+      const unreadMessages = await Message.countDocuments({
+        conversation: conv._id,
+        sender: 'client',
+        read: false,
+      });
+      return {
+        ...conv.toObject(),
+        unreadCount: unreadMessages,
+      };
+    })
+  );
+  
+  return res.status(200).json({
+    success: true,
+    message: 'Conversations retrieved successfully',
+    data: { conversations: conversationsWithUnread },
+  });
+};
+
+const getConversation = async (req, res) => {
+  const conversation = await Conversation.findById(req.params.id);
+  
+  if (!conversation) {
+    return res.status(404).json({
+      success: false,
+      message: 'Conversation not found',
+      errors: ['No conversation found with this ID'],
+    });
+  }
+  
+  // Get all messages for this conversation
+  const messages = await Message.find({ conversation: conversation._id })
+    .sort({ createdAt: 1 });
+  
+  // Mark all client messages as read
+  await Message.updateMany(
+    { conversation: conversation._id, sender: 'client', read: false },
+    { read: true, readAt: new Date() }
+  );
+  
+  // Update conversation unread count
+  conversation.unreadCount = 0;
+  await conversation.save();
+  
+  return res.status(200).json({
+    success: true,
+    message: 'Conversation retrieved successfully',
+    data: { 
+      conversation: {
+        ...conversation.toObject(),
+        messages,
+      },
+    },
+  });
+};
+
+const sendMessage = async (req, res) => {
+  const { id } = req.params;
+  const { message } = req.body;
+  
+  const conversation = await Conversation.findById(id);
+  
+  if (!conversation) {
+    return res.status(404).json({
+      success: false,
+      message: 'Conversation not found',
+      errors: ['No conversation found with this ID'],
+    });
+  }
+  
+  // Create admin message
+  const newMessage = await Message.create({
+    conversation: conversation._id,
+    sender: 'admin',
+    message: message.trim(),
+    read: true,
+    readAt: new Date(),
+  });
+  
+  // Update conversation
+  conversation.lastMessage = message.trim();
+  conversation.lastMessageAt = new Date();
+  await conversation.save();
+  
+  // Send email to client
+  const companyInfo = await getCompanyInfo();
+  try {
+    await sendReplyEmail(
+      conversation.clientEmail,
+      `Re: Your Message to ${companyInfo.companyName || 'RSK Associates'}`,
+      message.trim(),
+      companyInfo
+    );
+  } catch (error) {
+    console.error('Error sending reply email:', error);
+  }
+  
+  return res.status(200).json({
+    success: true,
+    message: 'Message sent successfully',
+    data: { message: newMessage, conversation },
   });
 };
 
@@ -124,6 +279,9 @@ const replyToMessage = async (req, res) => {
 
 module.exports = {
   createContactMessage,
+  getConversations,
+  getConversation,
+  sendMessage,
   getContactMessages,
   getContactMessage,
   deleteContactMessage,

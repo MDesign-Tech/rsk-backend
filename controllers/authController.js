@@ -1,7 +1,6 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const User = require('../models/User');
-const Permission = require('../models/Permission');
 const Module = require('../models/Module');
 const PasswordReset = require('../models/PasswordReset');
 const AboutUs = require('../models/AboutUs');
@@ -11,37 +10,6 @@ const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRE || '7d',
   });
-};
-
-const getUserPermissions = async (userId, userRole) => {
-  // Admin role has full permissions for all modules
-  if (userRole === 'admin') {
-    const modules = await Module.find({ isActive: true });
-    return modules.map((mod) => ({
-      module: mod._id,
-      moduleName: mod.name,
-      canCreate: true,
-      canRead: true,
-      canUpdate: true,
-      canDelete: true,
-    }));
-  }
-
-  // For members, fetch their actual permissions
-  const permissions = await Permission.find({ user: userId })
-    .populate('module', 'name')
-    .lean();
-
-  return permissions
-    .filter((p) => p.module && p.module.isActive !== false)
-    .map((p) => ({
-      module: p.module._id,
-      moduleName: p.module.name,
-      canCreate: p.canCreate,
-      canRead: p.canRead,
-      canUpdate: p.canUpdate,
-      canDelete: p.canDelete,
-    }));
 };
 
 const generateOTP = () => {
@@ -91,8 +59,6 @@ const login = async (req, res) => {
     maxAge: parseInt(process.env.COOKIE_EXPIRE || 7) * 24 * 60 * 60 * 1000,
   });
 
-  const permissions = await getUserPermissions(user._id, user.role);
-
   return res.status(200).json({
     success: true,
     message: 'Login successful',
@@ -104,7 +70,6 @@ const login = async (req, res) => {
         role: user.role,
         phone: user.phone,
         member: user.member,
-        permissions,
       },
     },
   });
@@ -125,15 +90,12 @@ const logout = (req, res) => {
 };
 
 const getMe = async (req, res) => {
-  const permissions = await getUserPermissions(req.user._id, req.user.role);
-
   return res.status(200).json({
     success: true,
     message: 'User retrieved successfully',
     data: {
       user: {
         ...req.user,
-        permissions,
       },
     },
   });

@@ -1,22 +1,17 @@
 const express = require('express');
-const {
-  getModules,
-  getModule,
-  createModule,
-  updateModule,
-  deleteModule,
-} = require('../controllers/moduleController');
 const { protect } = require('../middleware/auth');
-const validate = require('../middleware/validate');
 
 const router = express.Router();
 
+// Placeholder - module routes can be implemented as needed
 router.use(protect);
 
-router.get('/', getModules);
-router.get('/:id', getModule);
-router.post('/', createModule);
-router.put('/:id', updateModule);
-router.delete('/:id', deleteModule);
+router.get('/', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Modules endpoint',
+    data: { modules: [] },
+  });
+});
 
 module.exports = router;

@@ -5,8 +5,8 @@ const moduleSchema = new mongoose.Schema(
     name: {
       type: String,
       required: [true, 'Module name is required'],
-      unique: true,
       trim: true,
+      unique: true,
     },
     description: {
       type: String,

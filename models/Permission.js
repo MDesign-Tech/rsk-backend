@@ -5,12 +5,12 @@ const permissionSchema = new mongoose.Schema(
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
-      required: [true, 'User reference is required'],
+      required: [true, 'User is required'],
     },
     module: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Module',
-      required: [true, 'Module reference is required'],
+      required: [true, 'Module is required'],
     },
     canCreate: {
       type: Boolean,
@@ -34,7 +34,7 @@ const permissionSchema = new mongoose.Schema(
   }
 );
 
-// Compound index to ensure one permission record per user-module pair
+// Ensure one permission per user-module combination
 permissionSchema.index({ user: 1, module: 1 }, { unique: true });
 
 module.exports = mongoose.model('Permission', permissionSchema);

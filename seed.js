@@ -1,6 +1,5 @@
 const User = require('./models/User');
 const Module = require('./models/Module');
-const Permission = require('./models/Permission');
 const AboutUs = require('./models/AboutUs');
 const FAQ = require('./models/FAQ');
 const MissionVision = require('./models/MissionVision');
@@ -456,27 +455,6 @@ const DEFAULT_OPPORTUNITIES = [
   },
 ];
 
-const DEFAULT_MODULES = [
-  { name: 'Dashboard', description: 'Dashboard overview', route: '/admin', icon: 'LayoutDashboard', order: 0 },
-  { name: 'Hero', description: 'Hero section content', route: '/admin/hero', icon: 'Image', order: 1 },
-  { name: 'Services', description: 'Services management', route: '/admin/services', icon: 'Briefcase', order: 2 },
-  { name: 'About Us', description: 'About us page content', route: '/admin/about', icon: 'Info', order: 3 },
-  { name: 'Mission & Vision', description: 'Mission and vision content', route: '/admin/mission-vision', icon: 'Target', order: 4 },
-  { name: 'Partners', description: 'Partners management', route: '/admin/partners', icon: 'Handshake', order: 5 },
-  { name: 'FAQs', description: 'Frequently asked questions', route: '/admin/faqs', icon: 'HelpCircle', order: 6 },
-  { name: 'Team Members', description: 'Team members management', route: '/admin/team', icon: 'Users', order: 7 },
-  { name: 'Contact Messages', description: 'Contact messages', route: '/admin/contact', icon: 'Mail', order: 8 },
-  { name: 'Why Join Us', description: 'Why join us content', route: '/admin/why-join-us', icon: 'Users', order: 9 },
-  { name: 'Why Become Member', description: 'Why become member content', route: '/admin/why-become-member', icon: 'Award', order: 10 },
-  { name: 'Blog', description: 'Blog management', route: '/admin/blog', icon: 'BookOpen', order: 11 },
-  { name: 'News', description: 'News management', route: '/admin/news', icon: 'Newspaper', order: 12 },
-  { name: 'Opportunities', description: 'Opportunities management', route: '/admin/opportunities', icon: 'Briefcase', order: 13 },
-  { name: 'Users', description: 'User management', route: '/admin/users', icon: 'UserCog', order: 14 },
-  { name: 'Permissions', description: 'Permissions management', route: '/admin/permissions', icon: 'Shield', order: 15 },
-  { name: 'Modules', description: 'Modules management', route: '/admin/modules', icon: 'Boxes', order: 16 },
-  { name: 'Profile', description: 'User profile', route: '/admin/profile', icon: 'User', order: 17 },
-];
-
 const seedData = async () => {
   try {
     // Seed team sections first so they exist for admin member creation
@@ -550,53 +528,6 @@ const seedData = async () => {
         adminUser.member = adminMember._id;
         await adminUser.save();
         console.log('Existing TeamMember linked to admin');
-      }
-    }
-
-    // Seed default modules
-    const moduleCount = await Module.countDocuments();
-    if (moduleCount === 0) {
-      const createdModules = await Module.insertMany(DEFAULT_MODULES);
-      console.log('Default modules created successfully');
-
-      // Grant admin full permissions for all modules
-      if (adminUser) {
-        const permissions = createdModules.map((mod) => ({
-          user: adminUser._id,
-          module: mod._id,
-          canCreate: true,
-          canRead: true,
-          canUpdate: true,
-          canDelete: true,
-        }));
-
-        await Permission.insertMany(permissions);
-        console.log('Admin full permissions granted successfully');
-      }
-    } else {
-      console.log('Modules already exist');
-
-      // Ensure admin has permissions for all modules
-      if (adminUser) {
-        const modules = await Module.find();
-        for (const mod of modules) {
-          const existingPerm = await Permission.findOne({
-            user: adminUser._id,
-            module: mod._id,
-          });
-
-          if (!existingPerm) {
-            await Permission.create({
-              user: adminUser._id,
-              module: mod._id,
-              canCreate: true,
-              canRead: true,
-              canUpdate: true,
-              canDelete: true,
-            });
-          }
-        }
-        console.log('Admin permissions verified');
       }
     }
 
