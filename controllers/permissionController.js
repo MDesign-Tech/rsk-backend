@@ -255,9 +255,54 @@ const bulkCreatePermissions = async (req, res) => {
   }
 };
 
+// @desc    Get permissions for a user by email
+// @route   GET /api/permissions/user-by-email/:email
+// @access  Private (Admin)
+const getUserPermissionsByEmail = async (req, res) => {
+  try {
+    const { email } = req.params;
+
+    // Only admin can view permissions by email
+    if (req.user.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied",
+        errors: ["Only administrators can view user permissions"],
+      });
+    }
+
+    const user = await User.findOne({ email }).select("_id name email role");
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+        errors: ["No user found with this email address"],
+      });
+    }
+
+    const permissions = await Permission.find({ user: user._id })
+      .populate("module", "name description icon")
+      .sort({ module: 1 });
+
+    return res.status(200).json({
+      success: true,
+      message: "User permissions retrieved successfully",
+      data: { user, permissions },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to retrieve user permissions",
+      errors: [error.message],
+    });
+  }
+};
+
 module.exports = {
   getPermissions,
   getUserPermissions,
+  getUserPermissionsByEmail,
   createPermission,
   updatePermission,
   deletePermission,

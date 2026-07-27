@@ -92,8 +92,21 @@ const logout = (req, res) => {
 
 const getMe = async (req, res) => {
   try {
-    // Get user permissions
-    const permissions = await Permission.find({ user: req.user._id })
+    // Re-fetch user with member profile populated
+    const user = await User.findById(req.user._id)
+      .select('-password')
+      .populate('member', 'name department position title bio image visible order');
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+        errors: ['No user found with this ID'],
+      });
+    }
+
+    // Get user permissions with module details
+    const permissions = await Permission.find({ user: user._id })
       .populate('module', 'name description icon')
       .sort({ module: 1 });
 
@@ -102,7 +115,7 @@ const getMe = async (req, res) => {
       message: 'User retrieved successfully',
       data: {
         user: {
-          ...req.user,
+          ...user.toObject(),
           permissions,
         },
       },

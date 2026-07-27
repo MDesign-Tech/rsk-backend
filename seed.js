@@ -496,6 +496,7 @@ const DEFAULT_MODULES = [
   { name: 'User', description: 'Admin users management', icon: 'UserCog', order: 15 },
   { name: 'Permission', description: 'Permissions management', icon: 'Shield', order: 16 },
   { name: 'Team Section', description: 'Team sections management', icon: 'LayoutDashboard', order: 17 },
+  { name: 'Module', description: 'Module management', icon: 'Boxes', order: 18 },
 ];
 
 const seedData = async () => {

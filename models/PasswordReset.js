@@ -31,7 +31,7 @@ const passwordResetSchema = new mongoose.Schema(
 
 passwordResetSchema.pre('save', async function (next) {
   if (!this.isModified('otp')) {
-    next();
+    return next();
   }
   const salt = await bcrypt.genSalt(10);
   this.otp = await bcrypt.hash(this.otp.toString(), salt);

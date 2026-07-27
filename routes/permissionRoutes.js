@@ -2,6 +2,7 @@ const express = require('express');
 const {
   getPermissions,
   getUserPermissions,
+  getUserPermissionsByEmail,
   createPermission,
   updatePermission,
   deletePermission,
@@ -20,6 +21,9 @@ router.get('/', authorize('Permission', 'read'), getPermissions);
 
 // Get permissions for a specific user
 router.get('/user/:userId', getUserPermissions);
+
+// Get permissions for a user by email (admin only)
+router.get('/user-by-email/:email', authorize('Permission', 'read'), getUserPermissionsByEmail);
 
 // Create a permission (admin only)
 router.post('/', authorize('Permission', 'create'), createPermission);
