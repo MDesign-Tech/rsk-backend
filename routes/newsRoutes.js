@@ -16,6 +16,7 @@ const {
   validateStatusToggle,
 } = require('../validators/newsValidator');
 const { protect } = require('../middleware/auth');
+const { authorize } = require('../middleware/authorize');
 const validate = require('../middleware/validate');
 
 const router = express.Router();
@@ -28,26 +29,29 @@ router.get('/category/:categoryId', getArticlesByCategory);
 // ---- Admin routes (auth required) ----
 router.use(protect);
 
-router.get('/', listArticles);
-router.get('/:id', getArticleById);
+router.get('/', authorize('News', 'read'), listArticles);
+router.get('/:id', authorize('News', 'read'), getArticleById);
 router.post(
   '/',
+  authorize('News', 'create'),
   validateCreateNews,
   validate,
   createArticle
 );
 router.put(
   '/:id',
+  authorize('News', 'update'),
   validateUpdateNews,
   validate,
   updateArticle
 );
 router.patch(
   '/:id/status',
+  authorize('News', 'update'),
   validateStatusToggle,
   validate,
   toggleArticleStatus
 );
-router.delete('/:id', deleteArticle);
+router.delete('/:id', authorize('News', 'delete'), deleteArticle);
 
 module.exports = router;

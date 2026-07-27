@@ -1,53 +1,32 @@
 const { body } = require('express-validator');
 
 // Used for full create/update (PUT /api/hero). All fields optional so partial
-// updates (e.g. toggling visibility) are allowed without re-sending title/subtitle.
+// updates (e.g. toggling visibility) are allowed without re-sending title/services.
 const validateHero = [
   body('title')
     .optional()
     .notEmpty().withMessage('Title cannot be empty')
     .trim(),
-  body('subtitle')
+  body('services')
     .optional()
-    .notEmpty().withMessage('Subtitle cannot be empty')
-    .trim(),
-  body('trust')
-    .optional()
-    .trim(),
+    .isArray().withMessage('Services must be an array')
+    .custom((items) => {
+      if (!Array.isArray(items)) return true;
+      for (const item of items) {
+        if (!item.text || typeof item.text !== 'string' || item.text.trim() === '') {
+          throw new Error('Each service item must have a non-empty text string');
+        }
+      }
+      return true;
+    }),
   body('image')
     .optional()
     .isURL().withMessage('Image must be a valid URL'),
   body('imagePublicId')
     .optional()
     .trim(),
-  body('subtitleVisible')
-    .optional()
-    .isBoolean().withMessage('subtitleVisible must be a boolean')
-    .toBoolean(),
-  body('trustVisible')
-    .optional()
-    .isBoolean().withMessage('trustVisible must be a boolean')
-    .toBoolean(),
-];
-
-// Used for PATCH /api/hero/visibility/subtitle
-const validateSubtitleVisibility = [
-  body('subtitleVisible')
-    .exists().withMessage('subtitleVisible is required')
-    .isBoolean().withMessage('subtitleVisible must be a boolean')
-    .toBoolean(),
-];
-
-// Used for PATCH /api/hero/visibility/trust
-const validateTrustVisibility = [
-  body('trustVisible')
-    .exists().withMessage('trustVisible is required')
-    .isBoolean().withMessage('trustVisible must be a boolean')
-    .toBoolean(),
 ];
 
 module.exports = {
   validateHero,
-  validateSubtitleVisibility,
-  validateTrustVisibility,
 };

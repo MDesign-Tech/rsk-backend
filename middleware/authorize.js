@@ -4,6 +4,7 @@ const Permission = require('../models/Permission');
 
 /**
  * Middleware factory that checks if the authenticated user has the required
+ * permission for a module action.
  *
  * Usage:
  *   router.post('/hero', protect, authorize('Hero', 'create'), createHero);
@@ -33,6 +34,31 @@ const authorize = (moduleName, action) => {
         errors: [`Module "${moduleName}" not found or is not active`],
       });
     }
+
+    // Find the user's permission for this module
+    const permission = await Permission.findOne({
+      user: req.user._id,
+      module: moduleDoc._id,
+    });
+
+    if (!permission) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied',
+        errors: [`You do not have permission to ${action} ${moduleName}`],
+      });
+    }
+
+    // Check the specific action
+    const actionKey = `can${action.charAt(0).toUpperCase() + action.slice(1)}`;
+    if (!permission[actionKey]) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied',
+        errors: [`You do not have permission to ${action} ${moduleName}`],
+      });
+    }
+
     next();
   };
 };

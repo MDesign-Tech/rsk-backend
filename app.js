@@ -9,6 +9,7 @@ const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const moduleRoutes = require('./routes/moduleRoutes');
+const permissionRoutes = require('./routes/permissionRoutes');
 const memberRoutes = require('./routes/memberRoutes');
 const heroRoutes = require('./routes/heroRoutes');
 const serviceRoutes = require('./routes/serviceRoutes');
@@ -71,6 +72,7 @@ app.get('/api/test', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/modules', moduleRoutes);
+app.use('/api/permissions', permissionRoutes);
 app.use('/api/members', memberRoutes);
 app.use('/api/hero', heroRoutes);
 app.use('/api/services', serviceRoutes);

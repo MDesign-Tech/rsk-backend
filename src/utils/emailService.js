@@ -28,7 +28,7 @@ const sendOTPEmail = async (to, otp, companyInfo = {}) => {
         body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
         .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .header { background-color: #1a365d; padding: 30px; text-align: center; }
-        .header h1 { color: #ffffff; margin: 0; font-size: 24px; }
+        .header img { max-height: 60px; }
         .content { padding: 40px 30px; }
         .otp-box { background-color: #f0f4f8; border: 2px dashed #1a365d; border-radius: 8px; padding: 20px; text-align: center; margin: 30px 0; }
         .otp-code { font-size: 32px; font-weight: bold; color: #1a365d; letter-spacing: 8px; }
@@ -39,7 +39,7 @@ const sendOTPEmail = async (to, otp, companyInfo = {}) => {
     <body>
       <div class="container">
         <div class="header">
-          <h1>${companyName}</h1>
+          <img src="https://rsk-associates.com/logo.png" alt="${companyName} Logo" onerror="this.style.display='none'; this.parentElement.innerHTML+='<div style=\\'color:#ffffff;font-size:20px;font-weight:bold;\\'>${companyName}</div>';" />
         </div>
         <div class="content">
           <h2>Verify Your Email Address</h2>
@@ -90,7 +90,7 @@ const sendReplyEmail = async (to, subject, message, companyInfo = {}) => {
         body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
         .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .header { background-color: #1a365d; padding: 30px; text-align: center; }
-        .header h1 { color: #ffffff; margin: 0; font-size: 24px; }
+        .header img { max-height: 60px; }
         .content { padding: 40px 30px; }
         .reply-box { background-color: #f0f4f8; border-left: 4px solid #1a365d; padding: 20px; margin: 20px 0; border-radius: 4px; }
         .footer { background-color: #f4f4f4; padding: 20px; text-align: center; font-size: 12px; color: #666666; }
@@ -99,7 +99,7 @@ const sendReplyEmail = async (to, subject, message, companyInfo = {}) => {
     <body>
       <div class="container">
         <div class="header">
-          <h1>${companyName}</h1>
+          <img src="https://rsk-associates.com/logo.png" alt="${companyName} Logo" onerror="this.style.display='none'; this.parentElement.innerHTML+='<div style=\\'color:#ffffff;font-size:20px;font-weight:bold;\\'>${companyName}</div>';" />
         </div>
         <div class="content">
           <h2>${subject}</h2>

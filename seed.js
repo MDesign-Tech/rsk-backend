@@ -1,5 +1,6 @@
 const User = require('./models/User');
 const Module = require('./models/Module');
+const Permission = require('./models/Permission');
 const AboutUs = require('./models/AboutUs');
 const FAQ = require('./models/FAQ');
 const MissionVision = require('./models/MissionVision');
@@ -155,11 +156,33 @@ const DEFAULT_PARTNERS = [
 ];
 
 const DEFAULT_HERO = {
-  title: 'Welcome to RSK Associates',
-  subtitle: 'Professional Audit, Tax Advisory, and Financial Consulting Services',
-  trust: 'Trusted by 500+ businesses worldwide',
-  subtitleVisible: true,
-  trustVisible: true,
+  title: 'You Deserve:',
+  services: [
+    {
+      text: 'Tax Advisory',
+      visible: true,
+    },
+    {
+      text: 'Supporting Business Growth',
+      visible: true,
+    },
+    {
+      text: 'Business Management',
+      visible: true,
+    },
+    {
+      text: 'Audit',
+      visible: true,
+    },
+    {
+      text: 'Financial Consulting',
+      visible: true,
+    },
+    {
+      text: 'Compliance & Financial Product Developmen',
+      visible: true,
+    },
+  ],
 };
 
 const DEFAULT_SERVICES = [
@@ -455,8 +478,42 @@ const DEFAULT_OPPORTUNITIES = [
   },
 ];
 
+const DEFAULT_MODULES = [
+  { name: 'Hero', description: 'Hero section content management', icon: 'Image', order: 1 },
+  { name: 'Service', description: 'Services management', icon: 'Briefcase', order: 2 },
+  { name: 'About Us', description: 'About us page content', icon: 'Info', order: 3 },
+  { name: 'Mission & Vision', description: 'Mission and vision content', icon: 'Target', order: 4 },
+  { name: 'Partner', description: 'Partners management', icon: 'Handshake', order: 5 },
+  { name: 'FAQ', description: 'Frequently asked questions', icon: 'HelpCircle', order: 6 },
+  { name: 'Team Member', description: 'Team members management', icon: 'Users', order: 7 },
+  { name: 'Contact', description: 'Contact messages management', icon: 'Mail', order: 8 },
+  { name: 'Why Join Us', description: 'Why join us section', icon: 'Users', order: 9 },
+  { name: 'Why Become Member', description: 'Why become member section', icon: 'Award', order: 10 },
+  { name: 'News', description: 'News and articles management', icon: 'Newspaper', order: 11 },
+  { name: 'Opportunity', description: 'Opportunities management', icon: 'Briefcase', order: 12 },
+  { name: 'Opportunity Type', description: 'Opportunity types management', icon: 'Tag', order: 13 },
+  { name: 'Category', description: 'News categories management', icon: 'Folder', order: 14 },
+  { name: 'User', description: 'Admin users management', icon: 'UserCog', order: 15 },
+  { name: 'Permission', description: 'Permissions management', icon: 'Shield', order: 16 },
+  { name: 'Team Section', description: 'Team sections management', icon: 'LayoutDashboard', order: 17 },
+];
+
 const seedData = async () => {
   try {
+    // Seed modules first
+    const moduleMap = {};
+    for (const moduleData of DEFAULT_MODULES) {
+      const existingModule = await Module.findOne({ name: moduleData.name });
+      if (!existingModule) {
+        const created = await Module.create(moduleData);
+        moduleMap[moduleData.name] = created._id;
+        console.log(`Module "${moduleData.name}" created successfully`);
+      } else {
+        moduleMap[moduleData.name] = existingModule._id;
+        console.log(`Module "${moduleData.name}" already exists`);
+      }
+    }
+
     // Seed team sections first so they exist for admin member creation
     for (const sectionData of DEFAULT_TEAM_SECTIONS) {
       const sectionExists = await TeamSection.findOne({ name: sectionData.name });
@@ -528,6 +585,33 @@ const seedData = async () => {
         adminUser.member = adminMember._id;
         await adminUser.save();
         console.log('Existing TeamMember linked to admin');
+      }
+    }
+
+    // Seed permissions for admin user (full access to all modules)
+    if (adminUser.role === 'admin') {
+      const moduleNames = Object.keys(moduleMap);
+
+      for (const moduleName of moduleNames) {
+        const moduleId = moduleMap[moduleName];
+        const existingPermission = await Permission.findOne({
+          user: adminUser._id,
+          module: moduleId,
+        });
+
+        if (!existingPermission) {
+          await Permission.create({
+            user: adminUser._id,
+            module: moduleId,
+            canCreate: true,
+            canRead: true,
+            canUpdate: true,
+            canDelete: true,
+          });
+          console.log(`Permissions created for admin on module "${moduleName}"`);
+        } else {
+          console.log(`Permissions already exist for admin on module "${moduleName}"`);
+        }
       }
     }
 

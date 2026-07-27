@@ -7,23 +7,19 @@ const heroContentSchema = new mongoose.Schema(
       required: [true, 'Title is required'],
       trim: true,
     },
-    subtitle: {
-      type: String,
-      required: [true, 'Subtitle is required'],
-      trim: true,
-    },
-    trust: {
-      type: String,
-      trim: true,
-    },
-    subtitleVisible: {
-      type: Boolean,
-      default: true,
-    },
-    trustVisible: {
-      type: Boolean,
-      default: true,
-    },
+    services: [
+      {
+        text: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+        visible: {
+          type: Boolean,
+          default: true,
+        },
+      },
+    ],
     image: {
       type: String,
       default: null,

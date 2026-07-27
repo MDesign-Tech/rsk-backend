@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const User = require('../models/User');
 const Module = require('../models/Module');
+const Permission = require('../models/Permission');
 const PasswordReset = require('../models/PasswordReset');
 const AboutUs = require('../models/AboutUs');
 const { sendOTPEmail } = require('../src/utils/emailService');
@@ -90,15 +91,29 @@ const logout = (req, res) => {
 };
 
 const getMe = async (req, res) => {
-  return res.status(200).json({
-    success: true,
-    message: 'User retrieved successfully',
-    data: {
-      user: {
-        ...req.user,
+  try {
+    // Get user permissions
+    const permissions = await Permission.find({ user: req.user._id })
+      .populate('module', 'name description icon')
+      .sort({ module: 1 });
+
+    return res.status(200).json({
+      success: true,
+      message: 'User retrieved successfully',
+      data: {
+        user: {
+          ...req.user,
+          permissions,
+        },
       },
-    },
-  });
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to retrieve user data',
+      errors: [error.message],
+    });
+  }
 };
 
 const forgotPassword = async (req, res) => {
