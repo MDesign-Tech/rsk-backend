@@ -205,34 +205,47 @@ const resolveAuthor = async (authorId) => {
   };
 };
 
+// RSK default author used when the RSK checkbox is selected.
+const RSK_DEFAULT_AUTHOR = {
+  name: 'RSK associates',
+  role: 'Admin',
+  avatar: null,
+};
+
 // POST /api/news  (create)
 const createArticle = async (req, res) => {
   try {
-    const { title, content, category, status, coverImage } = req.body;
+    const { title, content, category, status, coverImage, isRsk } = req.body;
 
-    // Auto-set author from the logged-in user's linked team member.
-    const user = req.user;
-    if (!user || !user.member) {
-      return res.status(400).json({
-        success: false,
-        message: 'User is not linked to a team member. Please contact admin.',
-      });
+    let authorData;
+    if (isRsk) {
+      // Use the RSK system default author.
+      authorData = { ...RSK_DEFAULT_AUTHOR };
+    } else {
+      // Auto-set author from the logged-in user's linked team member.
+      const user = req.user;
+      if (!user || !user.member) {
+        return res.status(400).json({
+          success: false,
+          message: 'User is not linked to a team member. Please contact admin.',
+        });
+      }
+
+      const teamMember = await TeamMember.findById(user.member);
+      if (!teamMember) {
+        return res.status(400).json({
+          success: false,
+          message: 'Linked team member not found',
+        });
+      }
+
+      authorData = {
+        _id: teamMember._id,
+        name: teamMember.name,
+        avatar: teamMember.image || null,
+        role: teamMember.title || null,
+      };
     }
-
-    const teamMember = await TeamMember.findById(user.member);
-    if (!teamMember) {
-      return res.status(400).json({
-        success: false,
-        message: 'Linked team member not found',
-      });
-    }
-
-    const authorData = {
-      _id: teamMember._id,
-      name: teamMember.name,
-      avatar: teamMember.image || null,
-      role: teamMember.title || null,
-    };
 
     const categoryDoc = await resolveCategory(category);
     if (!categoryDoc) {

@@ -10,10 +10,13 @@ const validateCreateNews = [
     .notEmpty().withMessage('Category is required')
     .trim(),
   // authorId is optional on create because the backend auto-sets it
-  // from the logged-in user's linked team member.
+  // from the logged-in user's linked team member or RSK default.
   body('authorId')
-    .optional()
+    .optional({ checkFalsy: true })
     .isMongoId().withMessage('Author must be a valid team member ID'),
+  body('isRsk')
+    .optional()
+    .isBoolean().withMessage('isRsk must be a boolean'),
   body('status')
     .optional()
     .isIn(['draft', 'published']).withMessage('Status must be draft or published'),
