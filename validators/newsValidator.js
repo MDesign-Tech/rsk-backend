@@ -26,7 +26,6 @@ const validateCreateNews = [
 ];
 
 // Used for update (partial). All fields optional.
-// Author is locked and cannot be changed after creation.
 const validateUpdateNews = [
   body('title')
     .optional()
@@ -38,6 +37,12 @@ const validateUpdateNews = [
   body('category')
     .optional()
     .trim(),
+  body('isRsk')
+    .optional()
+    .isBoolean().withMessage('isRsk must be a boolean'),
+  body('authorId')
+    .optional({ checkFalsy: true })
+    .isMongoId().withMessage('Author must be a valid team member ID'),
   body('status')
     .optional()
     .isIn(['draft', 'published']).withMessage('Status must be draft or published'),

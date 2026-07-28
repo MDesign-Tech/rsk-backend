@@ -227,7 +227,7 @@ const DEFAULT_NEWS = [
     category: null,
     author: {
       name: "RSK associates",
-      role: "Adminr",
+      role: "Admin",
       avatar: null,
     },
     status: "published",

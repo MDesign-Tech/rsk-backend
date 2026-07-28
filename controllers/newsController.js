@@ -208,22 +208,44 @@ const resolveAuthor = async (authorId) => {
 // RSK default author used when the RSK checkbox is selected.
 const RSK_DEFAULT_AUTHOR = {
   name: 'RSK associates',
-  role: 'Admin',
+  role: 'System',
   avatar: null,
 };
 
 // POST /api/news  (create)
 const createArticle = async (req, res) => {
   try {
-    const { title, content, category, status, coverImage, isRsk } = req.body;
+    const { title, content, category, status, coverImage, isRsk, authorId } = req.body;
 
     let authorData;
-    if (isRsk) {
-      // Use the RSK system default author.
-      authorData = { ...RSK_DEFAULT_AUTHOR };
+    const user = req.user;
+
+    if (user.role === 'admin') {
+      // Admin must explicitly select an author (RSK or team member).
+      if (isRsk) {
+        authorData = { ...RSK_DEFAULT_AUTHOR };
+      } else if (authorId) {
+        const member = await TeamMember.findById(authorId);
+        if (!member) {
+          return res.status(400).json({
+            success: false,
+            message: 'Selected team member not found',
+          });
+        }
+        authorData = {
+          _id: member._id,
+          name: member.name,
+          avatar: member.image || null,
+          role: member.title || null,
+        };
+      } else {
+        return res.status(400).json({
+          success: false,
+          message: 'Please select an author (RSK or team member)',
+        });
+      }
     } else {
-      // Auto-set author from the logged-in user's linked team member.
-      const user = req.user;
+      // Member: auto-set author from their linked team member.
       if (!user || !user.member) {
         return res.status(400).json({
           success: false,
@@ -300,7 +322,7 @@ const updateArticle = async (req, res) => {
       });
     }
 
-    const { title, content, category, status, coverImage } = req.body;
+    const { title, content, category, status, coverImage, isRsk, authorId } = req.body;
 
     if (title !== undefined) article.title = title;
     if (content !== undefined) article.content = content;
@@ -317,8 +339,57 @@ const updateArticle = async (req, res) => {
       article.category = categoryDoc._id;
     }
 
-    // Author is locked and cannot be changed after creation.
-    // Any authorId sent in the request body is intentionally ignored.
+    const user = req.user;
+
+    if (user.role === 'admin') {
+      // Admin must explicitly select an author (RSK or team member) when updating.
+      if (isRsk) {
+        article.author = { ...RSK_DEFAULT_AUTHOR };
+      } else if (authorId) {
+        const member = await TeamMember.findById(authorId);
+        if (!member) {
+          return res.status(400).json({
+            success: false,
+            message: 'Selected team member not found',
+          });
+        }
+        article.author = {
+          _id: member._id,
+          name: member.name,
+          avatar: member.image || null,
+          role: member.title || null,
+        };
+      } else {
+        return res.status(400).json({
+          success: false,
+          message: 'Please select an author (RSK or team member)',
+        });
+      }
+    } else {
+      // Member: auto-set author from their linked team member on every update.
+      const memberUser = req.user;
+      if (!memberUser || !memberUser.member) {
+        return res.status(400).json({
+          success: false,
+          message: 'User is not linked to a team member. Please contact admin.',
+        });
+      }
+
+      const teamMember = await TeamMember.findById(memberUser.member);
+      if (!teamMember) {
+        return res.status(400).json({
+          success: false,
+          message: 'Linked team member not found',
+        });
+      }
+
+      article.author = {
+        _id: teamMember._id,
+        name: teamMember.name,
+        avatar: teamMember.image || null,
+        role: teamMember.title || null,
+      };
+    }
 
     if (title !== undefined) {
       const baseSlug = News.generateSlug(title);
