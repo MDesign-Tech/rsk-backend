@@ -208,15 +208,31 @@ const resolveAuthor = async (authorId) => {
 // POST /api/news  (create)
 const createArticle = async (req, res) => {
   try {
-    const { title, content, category, authorId, status, coverImage } = req.body;
+    const { title, content, category, status, coverImage } = req.body;
 
-    const authorData = await resolveAuthor(authorId);
-    if (!authorData) {
+    // Auto-set author from the logged-in user's linked team member.
+    const user = req.user;
+    if (!user || !user.member) {
       return res.status(400).json({
         success: false,
-        message: 'Author not found',
+        message: 'User is not linked to a team member. Please contact admin.',
       });
     }
+
+    const teamMember = await TeamMember.findById(user.member);
+    if (!teamMember) {
+      return res.status(400).json({
+        success: false,
+        message: 'Linked team member not found',
+      });
+    }
+
+    const authorData = {
+      _id: teamMember._id,
+      name: teamMember.name,
+      avatar: teamMember.image || null,
+      role: teamMember.title || null,
+    };
 
     const categoryDoc = await resolveCategory(category);
     if (!categoryDoc) {
@@ -271,7 +287,7 @@ const updateArticle = async (req, res) => {
       });
     }
 
-    const { title, content, category, authorId, status, coverImage } = req.body;
+    const { title, content, category, status, coverImage } = req.body;
 
     if (title !== undefined) article.title = title;
     if (content !== undefined) article.content = content;
@@ -288,16 +304,8 @@ const updateArticle = async (req, res) => {
       article.category = categoryDoc._id;
     }
 
-    if (authorId !== undefined) {
-      const authorData = await resolveAuthor(authorId);
-      if (!authorData) {
-        return res.status(400).json({
-          success: false,
-          message: 'Author not found',
-        });
-      }
-      article.author = authorData;
-    }
+    // Author is locked and cannot be changed after creation.
+    // Any authorId sent in the request body is intentionally ignored.
 
     if (title !== undefined) {
       const baseSlug = News.generateSlug(title);

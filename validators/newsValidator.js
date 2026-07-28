@@ -9,8 +9,10 @@ const validateCreateNews = [
   body('category')
     .notEmpty().withMessage('Category is required')
     .trim(),
+  // authorId is optional on create because the backend auto-sets it
+  // from the logged-in user's linked team member.
   body('authorId')
-    .notEmpty().withMessage('Author is required')
+    .optional()
     .isMongoId().withMessage('Author must be a valid team member ID'),
   body('status')
     .optional()
@@ -21,6 +23,7 @@ const validateCreateNews = [
 ];
 
 // Used for update (partial). All fields optional.
+// Author is locked and cannot be changed after creation.
 const validateUpdateNews = [
   body('title')
     .optional()
@@ -32,9 +35,6 @@ const validateUpdateNews = [
   body('category')
     .optional()
     .trim(),
-  body('authorId')
-    .optional()
-    .isMongoId().withMessage('Author must be a valid team member ID'),
   body('status')
     .optional()
     .isIn(['draft', 'published']).withMessage('Status must be draft or published'),
