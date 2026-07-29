@@ -245,28 +245,34 @@ const createArticle = async (req, res) => {
         });
       }
     } else {
-      // Member: auto-set author from their linked team member.
-      if (!user || !user.member) {
-        return res.status(400).json({
-          success: false,
-          message: 'User is not linked to a team member. Please contact admin.',
-        });
+      // Member: auto-set author from their linked team member, or use user data if not linked.
+      if (user && user.member) {
+        const teamMember = await TeamMember.findById(user.member);
+        if (teamMember) {
+          authorData = {
+            _id: teamMember._id,
+            name: teamMember.name,
+            avatar: teamMember.image || null,
+            role: teamMember.title || null,
+          };
+        } else {
+          // Linked member not found, fall back to user data
+          authorData = {
+            _id: user._id,
+            name: user.name,
+            avatar: null,
+            role: null,
+          };
+        }
+      } else {
+        // No linked team member - use user's own data as author
+        authorData = {
+          _id: user._id,
+          name: user.name,
+          avatar: null,
+          role: null,
+        };
       }
-
-      const teamMember = await TeamMember.findById(user.member);
-      if (!teamMember) {
-        return res.status(400).json({
-          success: false,
-          message: 'Linked team member not found',
-        });
-      }
-
-      authorData = {
-        _id: teamMember._id,
-        name: teamMember.name,
-        avatar: teamMember.image || null,
-        role: teamMember.title || null,
-      };
     }
 
     const categoryDoc = await resolveCategory(category);
@@ -366,29 +372,36 @@ const updateArticle = async (req, res) => {
         });
       }
     } else {
-      // Member: auto-set author from their linked team member on every update.
+      // Member: auto-set author from their linked team member on every update,
+      // or use user data if not linked.
       const memberUser = req.user;
-      if (!memberUser || !memberUser.member) {
-        return res.status(400).json({
-          success: false,
-          message: 'User is not linked to a team member. Please contact admin.',
-        });
+      if (memberUser && memberUser.member) {
+        const teamMember = await TeamMember.findById(memberUser.member);
+        if (teamMember) {
+          article.author = {
+            _id: teamMember._id,
+            name: teamMember.name,
+            avatar: teamMember.image || null,
+            role: teamMember.title || null,
+          };
+        } else {
+          // Linked member not found, fall back to user data
+          article.author = {
+            _id: memberUser._id,
+            name: memberUser.name,
+            avatar: null,
+            role: null,
+          };
+        }
+      } else {
+        // No linked team member - use user's own data as author
+        article.author = {
+          _id: memberUser._id,
+          name: memberUser.name,
+          avatar: null,
+          role: null,
+        };
       }
-
-      const teamMember = await TeamMember.findById(memberUser.member);
-      if (!teamMember) {
-        return res.status(400).json({
-          success: false,
-          message: 'Linked team member not found',
-        });
-      }
-
-      article.author = {
-        _id: teamMember._id,
-        name: teamMember.name,
-        avatar: teamMember.image || null,
-        role: teamMember.title || null,
-      };
     }
 
     if (title !== undefined) {

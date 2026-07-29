@@ -8,6 +8,7 @@ const {
   verifyOTP,
   resendOTP,
   resetPassword,
+  changePassword,
 } = require('../controllers/authController');
 const {
   validateLogin,
@@ -15,6 +16,7 @@ const {
   validateVerifyOTP,
   validateResendOTP,
   validateResetPassword,
+  validateChangePassword,
 } = require('../validators/authValidator');
 const { protect } = require('../middleware/auth');
 const { otpLimiter } = require('../middleware/rateLimit');
@@ -30,5 +32,6 @@ router.post('/forgot-password', otpLimiter, validateForgotPassword, validate, fo
 router.post('/verify-otp', validateVerifyOTP, validate, verifyOTP);
 router.post('/resend-otp', otpLimiter, validateResendOTP, validate, resendOTP);
 router.post('/reset-password', validateResetPassword, validate, resetPassword);
+router.post('/change-password', protect, validateChangePassword, validate, changePassword);
 
 module.exports = router;

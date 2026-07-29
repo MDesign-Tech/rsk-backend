@@ -276,6 +276,47 @@ const resendOTP = async (req, res) => {
   });
 };
 
+const changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const user = await User.findById(req.user._id).select('+password');
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+        errors: ['No user found with this ID'],
+      });
+    }
+
+    // Verify current password
+    const isMatch = await user.matchPassword(currentPassword);
+    if (!isMatch) {
+      return res.status(400).json({
+        success: false,
+        message: 'Current password is incorrect',
+        errors: ['The current password you entered is incorrect'],
+      });
+    }
+
+    // Set new password
+    user.password = newPassword;
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Password changed successfully',
+      data: {},
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to change password',
+      errors: [error.message],
+    });
+  }
+};
+
 const resetPassword = async (req, res) => {
   const { email, otp, password } = req.body;
 
@@ -346,4 +387,5 @@ module.exports = {
   verifyOTP,
   resendOTP,
   resetPassword,
+  changePassword,
 };
