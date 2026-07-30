@@ -7,18 +7,21 @@ const { sendReplyEmail } = require('../src/utils/emailService');
 const getCompanyInfo = async () => {
   try {
     const about = await AboutUs.findOne();
-    if (!about || !about.contactMethods || about.contactMethods.length === 0) {
+    if (!about) {
       return {};
     }
 
-    const emailContact = about.contactMethods.find((c) => c.label === 'Email');
-    const phoneContact = about.contactMethods.find((c) => c.label === 'Phone');
-    const locationContact = about.contactMethods.find((c) => c.label === 'Location');
+    const emailContact = about.contactMethods ? about.contactMethods.find((c) => c.label === 'Email') : null;
+    const phoneContact = about.contactMethods ? about.contactMethods.find((c) => c.label === 'Phone') : null;
+    const locationContact = about.contactMethods ? about.contactMethods.find((c) => c.label === 'Location') : null;
 
     return {
       companyName: about.title || 'RSK Associates',
       companyAddress: locationContact ? locationContact.value : 'KIMIRONKO, KG 11 Ave, Kigali',
       companyPhone: phoneContact ? phoneContact.value : '+250 788 492 529',
+      companyEmail: emailContact ? emailContact.value : 'info@rsk-associates.com',
+      companyLogo: about.logo || 'https://rsk-dev.vercel.app/rsk-logo.svg',
+      socialMedia: about.socialMedia || {},
     };
   } catch (error) {
     return {};
@@ -174,6 +177,7 @@ const sendMessage = async (req, res) => {
       conversation.clientEmail,
       `Re: Your Message to ${companyInfo.companyName || 'RSK Associates'}`,
       message.trim(),
+      conversation.clientName,
       companyInfo
     );
   } catch (error) {
@@ -265,7 +269,7 @@ const replyToMessage = async (req, res) => {
   const companyInfo = await getCompanyInfo();
 
   try {
-    await sendReplyEmail(message.email, 'Re: Your Message to RSK Associates', reply, companyInfo);
+    await sendReplyEmail(message.email, 'Re: Your Message to RSK Associates', reply, message.name, companyInfo);
   } catch (error) {
     console.error('Error sending reply email:', error);
   }

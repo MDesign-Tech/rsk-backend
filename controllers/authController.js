@@ -20,18 +20,21 @@ const generateOTP = () => {
 const getCompanyInfo = async () => {
   try {
     const about = await AboutUs.findOne();
-    if (!about || !about.contactMethods || about.contactMethods.length === 0) {
+    if (!about) {
       return {};
     }
 
-    const emailContact = about.contactMethods.find((c) => c.label === 'Email');
-    const phoneContact = about.contactMethods.find((c) => c.label === 'Phone');
-    const locationContact = about.contactMethods.find((c) => c.label === 'Location');
+    const emailContact = about.contactMethods ? about.contactMethods.find((c) => c.label === 'Email') : null;
+    const phoneContact = about.contactMethods ? about.contactMethods.find((c) => c.label === 'Phone') : null;
+    const locationContact = about.contactMethods ? about.contactMethods.find((c) => c.label === 'Location') : null;
 
     return {
       companyName: about.title || 'RSK Associates',
       companyAddress: locationContact ? locationContact.value : 'KIMIRONKO, KG 11 Ave, Kigali',
       companyPhone: phoneContact ? phoneContact.value : '+250 788 492 529',
+      companyEmail: emailContact ? emailContact.value : 'info@rsk-associates.com',
+      companyLogo: about.logo || 'https://rsk-dev.vercel.app/rsk-logo.svg',
+      socialMedia: about.socialMedia || {},
     };
   } catch (error) {
     return {};
@@ -156,7 +159,7 @@ const forgotPassword = async (req, res) => {
   const companyInfo = await getCompanyInfo();
 
   try {
-    await sendOTPEmail(email, otp, companyInfo);
+    await sendOTPEmail(email, otp, user.name, companyInfo);
   } catch (error) {
     console.error('Error sending OTP email:', error);
     return res.status(500).json({
@@ -256,7 +259,7 @@ const resendOTP = async (req, res) => {
   const companyInfo = await getCompanyInfo();
 
   try {
-    await sendOTPEmail(email, otp, companyInfo);
+    await sendOTPEmail(email, otp, user.name, companyInfo);
   } catch (error) {
     console.error('Error sending OTP email:', error);
     return res.status(500).json({
