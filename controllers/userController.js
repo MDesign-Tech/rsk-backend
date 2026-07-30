@@ -72,13 +72,10 @@ const createUser = async (req, res) => {
       });
     }
 
-    // Auto-copy name from member
-    const userName = member.name;
-
     // Create user with member linked, role auto-set to 'member'
     const user = await User.create({
-      name: userName,
-      email,
+      name: name || '',
+      email: email || '',
       phone,
       password,
       role: 'member',
@@ -100,19 +97,10 @@ const createUser = async (req, res) => {
     });
   }
 
-  // Without memberId - require name, email, password
-  if (!name || !email) {
-    return res.status(400).json({
-      success: false,
-      message: 'Missing required fields',
-      errors: ['Name and email are required when not linking to a member'],
-    });
-  }
-
   // Create user without member, role auto-set to 'member'
   const user = await User.create({
-    name,
-    email,
+    name: name || '',
+    email: email || '',
     phone,
     password,
     role: 'member',
@@ -174,9 +162,13 @@ const updateUser = async (req, res) => {
         }
       }
 
-      // Link new member and sync name from member to user
+      // Link new member; use name from form if provided, otherwise fall back to member name
       user.member = memberId;
-      user.name = member.name;
+      if (name !== undefined) {
+        user.name = name;
+      } else {
+        user.name = member.name;
+      }
       member.user = user._id;
       await member.save();
     } else {

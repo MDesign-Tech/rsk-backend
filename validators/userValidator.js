@@ -6,6 +6,7 @@ const validateUser = [
     .trim()
     .isLength({ min: 2 }).withMessage('Name must be at least 2 characters'),
   body('email')
+    .optional()
     .isEmail().withMessage('Please enter a valid email')
     .normalizeEmail(),
   body('password')
