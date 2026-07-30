@@ -9,7 +9,7 @@ const {
   toggleTeamSectionVisibility,
   reorderSections,
 } = require('../controllers/teamSectionController');
-const { validateTeamSection } = require('../validators/teamSectionValidator');
+const { validateCreateTeamSection, validateUpdateTeamSection } = require('../validators/teamSectionValidator');
 const { protect } = require('../middleware/auth');
 const { authorize } = require('../middleware/authorize');
 const validate = require('../middleware/validate');
@@ -20,8 +20,8 @@ router.use(protect);
 
 router.get('/', authorize('Team Section', 'read'), getTeamSections);
 router.get('/:id', authorize('Team Section', 'read'), getTeamSection);
-router.post('/', authorize('Team Section', 'create'), validateTeamSection, validate, createTeamSection);
-router.put('/:id', authorize('Team Section', 'update'), validateTeamSection, validate, updateTeamSection);
+router.post('/', authorize('Team Section', 'create'), validateCreateTeamSection, validate, createTeamSection);
+router.put('/:id', authorize('Team Section', 'update'), validateUpdateTeamSection, validate, updateTeamSection);
 router.patch('/:id/visibility', authorize('Team Section', 'update'), body('visible').isBoolean().exists({ checkFalsy: true }), toggleTeamSectionVisibility);
 router.delete('/:id', authorize('Team Section', 'delete'), deleteTeamSection);
 router.patch('/reorder', authorize('Team Section', 'update'), body('order').isArray().exists({ checkFalsy: true }), reorderSections);
