@@ -8,6 +8,7 @@ const {
   updateTeamMember,
   deleteTeamMember,
   toggleTeamMemberVisibility,
+  moveTeamMember,
   reorderMembers,
 } = require('../controllers/teamMemberController');
 const { validateTeamMember } = require('../validators/teamMemberValidator');
@@ -43,5 +44,6 @@ router.put(
 router.delete('/:id', authorize('Team Member', 'delete'), deleteTeamMember);
 router.patch('/:id/visibility', authorize('Team Member', 'update'), body('visible').isBoolean().exists({ checkFalsy: true }), toggleTeamMemberVisibility);
 router.patch('/reorder', authorize('Team Member', 'update'), body('order').isArray().exists({ checkFalsy: true }), reorderMembers);
+router.patch('/:id/move', authorize('Team Member', 'update'), body('section').isMongoId().exists({ checkFalsy: true }), moveTeamMember);
 
 module.exports = router;

@@ -224,6 +224,47 @@ const toggleTeamMemberVisibility = async (req, res) => {
   });
 };
 
+const moveTeamMember = async (req, res) => {
+  const { id } = req.params;
+  const { section } = req.body;
+
+  if (!section) {
+    return res.status(400).json({
+      success: false,
+      message: 'Section ID is required',
+      errors: ['section is required'],
+    });
+  }
+
+  try {
+    const teamMember = await TeamMember.findById(id);
+    if (!teamMember) {
+      return res.status(404).json({
+        success: false,
+        message: 'Team member not found',
+        errors: ['No team member found with this ID'],
+      });
+    }
+
+    teamMember.section = section;
+    await teamMember.save();
+    await teamMember.populate('section');
+
+    return res.status(200).json({
+      success: true,
+      message: 'Team member moved successfully',
+      data: { teamMember },
+    });
+  } catch (error) {
+    console.error('Move team member error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to move team member',
+      errors: [error.message || 'Unknown error'],
+    });
+  }
+};
+
 const reorderMembers = async (req, res) => {
   const { order } = req.body;
 
@@ -268,5 +309,6 @@ module.exports = {
   updateTeamMember,
   deleteTeamMember,
   toggleTeamMemberVisibility,
+  moveTeamMember,
   reorderMembers,
 };
