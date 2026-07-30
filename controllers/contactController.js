@@ -2,7 +2,7 @@ const ContactMessage = require('../models/ContactMessage');
 const Conversation = require('../models/Conversation');
 const Message = require('../models/Message');
 const AboutUs = require('../models/AboutUs');
-const { sendReplyEmail } = require('../src/utils/emailService');
+const { sendReplyEmail, sendContactNotificationEmail } = require('../src/utils/emailService');
 
 const getCompanyInfo = async () => {
   try {
@@ -68,6 +68,14 @@ const createContactMessage = async (req, res) => {
     email,
     message: message.trim(),
   });
+
+  // Send notification email to RSK
+  const companyInfo = await getCompanyInfo();
+  try {
+    await sendContactNotificationEmail(name, email, message.trim(), companyInfo);
+  } catch (error) {
+    console.error('Error sending contact notification email:', error);
+  }
   
   return res.status(201).json({
     success: true,

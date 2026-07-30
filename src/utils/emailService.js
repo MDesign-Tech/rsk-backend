@@ -197,7 +197,82 @@ const sendReplyEmail = async (to, subject, message, clientName, companyInfo = {}
   await transporter.sendMail(mailOptions);
 };
 
+const sendContactNotificationEmail = async (clientName, clientEmail, message, companyInfo = {}) => {
+  const transporter = createTransporter();
+
+  const companyName = companyInfo.companyName || 'RSK Associates';
+  const companyEmail = companyInfo.companyEmail || 'info@rsk-associates.com';
+  const companyLogo = companyInfo.companyLogo || 'https://rsk-dev.vercel.app/rsk-logo.svg';
+
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>New Contact Message - ${companyName}</title>
+      <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .logo-section { padding: 30px 30px 10px 30px; text-align: center; background-color: #ffffff; }
+        .logo-section img { max-height: 80px; width: auto; }
+        .content { padding: 20px 30px 40px 30px; }
+        .greeting { font-size: 18px; color: #1a365d; margin: 0 0 20px 0; font-weight: normal; }
+        .message { font-size: 15px; color: #333333; line-height: 1.6; margin: 0 0 20px 0; }
+        .message-box { background-color: #f0f4f8; border-left: 4px solid #1a365d; padding: 20px; margin: 20px 0; border-radius: 4px; }
+        .message-content { font-size: 15px; color: #333333; line-height: 1.6; }
+        .sender-info { font-size: 14px; color: #666666; margin-top: 10px; }
+        .sender-info strong { color: #1a365d; }
+        .footer { background-color: #f8f9fa; padding: 30px; text-align: center; font-size: 13px; color: #666666; border-top: 1px solid #e0e0e0; }
+        .footer-social { margin-bottom: 15px; }
+        .footer-social a { display: inline-flex; }
+        .footer-contact { margin-bottom: 10px; line-height: 1.8; }
+        .footer-contact p { margin: 4px 0; }
+        .footer-copy { font-size: 12px; color: #999999; border-top: 1px solid #e0e0e0; padding-top: 10px; margin-top: 10px; }
+        @media only screen and (max-width: 600px) {
+          .container { max-width: 100%; border-radius: 0; }
+          .content { padding: 20px 15px 30px 15px; }
+          .logo-section { padding: 20px 15px 10px 15px; }
+          .footer { padding: 20px 15px; }
+          .message-box { padding: 15px; }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="logo-section">
+          <img src="${companyLogo}" alt="${companyName} Logo" onerror="this.style.display='none';" />
+        </div>
+        <div class="content">
+          <p class="greeting">Hello ${companyName} Team,</p>
+          <p class="message">You have received a new contact message from your website. Here are the details:</p>
+          <div class="message-box">
+            <div class="message-content">${message.replace(/\n/g, '<br>')}</div>
+            <div class="sender-info">
+              <strong>From:</strong> ${clientName} <${clientEmail}>
+            </div>
+          </div>
+          <p class="message">Click reply to respond directly to <strong>${clientName}</strong> at <a href="mailto:${clientEmail}">${clientEmail}</a>.</p>
+        </div>
+        ${getFooterHtml(companyInfo)}
+      </div>
+    </body>
+    </html>
+  `;
+
+  const mailOptions = {
+    from: `"${clientName}" <${process.env.GMAIL_USER}>`,
+    to: companyEmail,
+    replyTo: clientEmail,
+    subject: `New Contact Message from ${clientName} - ${companyName}`,
+    html: htmlContent,
+  };
+
+  await transporter.sendMail(mailOptions);
+};
+
 module.exports = {
   sendOTPEmail,
   sendReplyEmail,
+  sendContactNotificationEmail,
 };
