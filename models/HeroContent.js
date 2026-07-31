@@ -1,5 +1,20 @@
 const mongoose = require('mongoose');
 
+const heroImageSchema = new mongoose.Schema({
+  url: {
+    type: String,
+    required: true,
+  },
+  publicId: {
+    type: String,
+    required: true,
+  },
+  isActive: {
+    type: Boolean,
+    default: false,
+  },
+});
+
 const heroContentSchema = new mongoose.Schema(
   {
     title: {
@@ -20,14 +35,7 @@ const heroContentSchema = new mongoose.Schema(
         },
       },
     ],
-    image: {
-      type: String,
-      default: null,
-    },
-    imagePublicId: {
-      type: String,
-      default: null,
-    },
+    images: [heroImageSchema],
   },
   {
     timestamps: true,

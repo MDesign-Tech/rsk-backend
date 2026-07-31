@@ -156,7 +156,7 @@ const DEFAULT_PARTNERS = [
 ];
 
 const DEFAULT_HERO = {
-  title: 'You Deserve:',
+  title: 'What value we can add to your business?',
   services: [
     {
       text: 'Tax Advisory',
@@ -530,63 +530,19 @@ const seedData = async () => {
 
     let adminUser;
     if (adminExists) {
-      console.log('Admin user already exists');
+      console.log('RSK associates admin already exists');
       adminUser = adminExists;
     } else {
       adminUser = await User.create({
-        name: 'Admin User',
-        email: 'admin@rskassociates.com',
-        password: 'Admin123!',
+        name: 'RSK associates admin',
+        email: 'rskassociatescpa@gmail.com',
+        password: 'rskassociatescpa@gmail.com',
         role: 'admin',
       });
 
-      console.log('Default admin user created successfully');
-      console.log('Email: admin@rskassociates.com');
-      console.log('Password: Admin123!');
-    }
-
-    // Ensure admin has a TeamMember profile
-    let adminMember = null;
-    if (adminUser.member) {
-      adminMember = await TeamMember.findById(adminUser.member);
-    }
-
-    if (!adminMember) {
-      // Create a default TeamMember for the admin if none exists
-      const defaultAdminMember = await TeamMember.findOne({ name: 'Admin User' });
-      if (!defaultAdminMember) {
-        // Get a default section for the admin member
-        const defaultSection = await TeamSection.findOne({ name: 'Board of Directors' });
-        adminMember = await TeamMember.create({
-          name: adminUser.name,
-          position: 'Administrator',
-          title: 'System Administrator',
-          bio: 'System administrator with full access to all dashboard modules.',
-          image: null,
-          imagePublicId: null,
-          section: defaultSection ? defaultSection._id : null,
-          socialMedia: {
-            facebook: { href: null, visible: true },
-            instagram: { href: null, visible: true },
-            whatsapp: { href: null, visible: true },
-            x: { href: null, visible: true },
-            linkedin: { href: null, visible: true },
-            youtube: { href: null, visible: true },
-          },
-          visible: false,
-          order: 0,
-          user: adminUser._id,
-        });
-        console.log('Default admin TeamMember created and linked');
-      } else {
-        // Link existing TeamMember to admin
-        adminMember = defaultAdminMember;
-        adminMember.user = adminUser._id;
-        await adminMember.save();
-        adminUser.member = adminMember._id;
-        await adminUser.save();
-        console.log('Existing TeamMember linked to admin');
-      }
+      console.log('Default RSK associates admin created successfully');
+      console.log('Email: rskassociatescpa@gmail.com');
+      console.log('Password: rskassociatescpa@gmail.com');
     }
 
     // Seed permissions for admin user (full access to all modules)
