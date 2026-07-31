@@ -28,18 +28,22 @@ const updateHero = async (req, res) => {
       hero = new HeroContent();
     }
 
+    // Update text fields
+    if (req.body.title !== undefined) hero.title = req.body.title;
+    if (req.body.services !== undefined) hero.services = req.body.services;
+
     // Handle images array - ensure only one image is active
     if (req.body.images && Array.isArray(req.body.images)) {
-      // Ensure only one image is marked as active
-      const images = req.body.images.map((img, index) => ({
-        ...img,
-        isActive: index === 0, // First image is active by default
+      // Check if any image is marked as active in the request
+      const hasActiveImage = req.body.images.some((img) => img.isActive === true);
+      
+      // If no image is marked as active, set the first one as active
+      hero.images = req.body.images.map((img, index) => ({
+        url: img.url,
+        publicId: img.publicId,
+        isActive: hasActiveImage ? img.isActive === true : index === 0,
       }));
-      req.body.images = images;
     }
-
-    // Apply text fields and images from the request body
-    Object.assign(hero, req.body);
 
     await hero.save();
 
