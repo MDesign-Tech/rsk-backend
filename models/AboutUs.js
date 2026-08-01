@@ -14,6 +14,12 @@ const aboutUsSchema = new mongoose.Schema(
       trim: true,
     },
 
+    whoTitle: {
+      type: String,
+      default: "Who we are",
+      trim: true,
+    },
+
     stats: [
       {
         number: {

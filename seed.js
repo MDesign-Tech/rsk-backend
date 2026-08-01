@@ -22,6 +22,8 @@ const DEFAULT_ABOUT = {
   description:
     "At RSK Associates, we are more than accountants; we are trusted partners on the path to financial success.",
 
+  whoTitle: "Who we are",
+
   stats: [
     {
       number: "500+",
