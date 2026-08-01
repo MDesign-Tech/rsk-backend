@@ -28,6 +28,7 @@ const opportunityTypeRoutes = require('./routes/opportunityTypeRoutes');
 const whyJoinUsRoutes = require('./routes/whyJoinUsRoutes');
 const whyBecomeMemberRoutes = require('./routes/whyBecomeMemberRoutes');
 const mediaLibraryRoutes = require('./routes/mediaLibraryRoutes');
+const cloudinaryRoutes = require('./routes/cloudinaryRoutes');
 
 const app = express();
 
@@ -92,6 +93,7 @@ app.use('/api/opportunity-types', opportunityTypeRoutes);
 app.use('/api/why-join-us', whyJoinUsRoutes);
 app.use('/api/why-become-member', whyBecomeMemberRoutes);
 app.use('/api/media-library', mediaLibraryRoutes);
+app.use('/api/cloudinary', cloudinaryRoutes);
 
 app.get('/', (req, res) => {
   res.json({

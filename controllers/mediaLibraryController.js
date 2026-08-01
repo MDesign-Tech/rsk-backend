@@ -463,7 +463,77 @@ const deleteUnusedImage = async (req, res) => {
   }
 };
 
+// Direct Cloudinary deletion (used by hero form and other components)
+// This deletes from Cloudinary without checking if the image is used in the database
+const deleteFromCloudinary = async (req, res) => {
+  try {
+    const { publicId } = req.body;
+
+    if (!publicId || typeof publicId !== "string") {
+      return res.status(400).json({
+        success: false,
+        message: "publicId is required",
+        errors: ["publicId is required"],
+      });
+    }
+
+    const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+    const apiKey = process.env.CLOUDINARY_API_KEY;
+    const apiSecret = process.env.CLOUDINARY_API_SECRET;
+
+    if (!cloudName || !apiKey || !apiSecret) {
+      throw new Error("Cloudinary credentials are not configured on the server");
+    }
+
+    const timestamp = Math.round(Date.now() / 1000);
+    const stringToSign = `public_id=${publicId}&timestamp=${timestamp}${apiSecret}`;
+    const signature = crypto.createHash("sha1").update(stringToSign).digest("hex");
+
+    const deleteResponse = await fetch(
+      `https://api.cloudinary.com/v1_1/${cloudName}/image/destroy`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          public_id: publicId,
+          api_key: apiKey,
+          timestamp,
+          signature,
+        }),
+      }
+    );
+
+    if (!deleteResponse.ok) {
+      const errorText = await deleteResponse.text();
+      console.error("Cloudinary delete error:", deleteResponse.status, errorText);
+      throw new Error(`Failed to delete image from Cloudinary: ${deleteResponse.status}`);
+    }
+
+    const deleteResult = await deleteResponse.json();
+
+    if (deleteResult.result !== "ok") {
+      throw new Error(`Cloudinary deletion failed: ${deleteResult.result}`);
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Image deleted successfully",
+      data: { publicId },
+    });
+  } catch (error) {
+    console.error("Delete from Cloudinary error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to delete image from Cloudinary",
+      errors: [error.message || "Unknown error"],
+    });
+  }
+};
+
 module.exports = {
   getMediaLibrary,
   deleteUnusedImage,
+  deleteFromCloudinary,
 };
