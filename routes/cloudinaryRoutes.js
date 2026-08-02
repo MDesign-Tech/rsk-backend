@@ -6,6 +6,6 @@ const { deleteFromCloudinary } = require('../controllers/mediaLibraryController'
 // @route   DELETE /api/cloudinary/delete
 // @desc    Delete an image from Cloudinary (used by hero form and other frontend components)
 // @access  Private (Admin only)
-router.delete('/', protect, deleteFromCloudinary);
+router.delete('/delete', protect, deleteFromCloudinary);
 
 module.exports = router;
