@@ -15,9 +15,6 @@ const validateUser = [
   body('phone')
     .optional()
     .trim(),
-  body('memberId')
-    .optional()
-    .isMongoId().withMessage('Invalid member ID'),
 ];
 
 module.exports = { validateUser };
