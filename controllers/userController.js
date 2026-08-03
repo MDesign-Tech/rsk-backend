@@ -162,21 +162,24 @@ const updateUser = async (req, res) => {
 
   const { name, email, phone, password } = req.body;
 
-  if (name !== undefined) user.name = name;
-  if (email !== undefined) user.email = email;
-  if (phone !== undefined) user.phone = phone;
-  if (password) user.password = password;
+  const updateData = {};
+  if (name !== undefined) updateData.name = name;
+  if (email !== undefined) updateData.email = email;
+  if (phone !== undefined) updateData.phone = phone;
+  if (password) updateData.password = password;
 
-  await user.save();
-
-  const populatedUser = await User.findById(user._id)
+  const updatedUser = await User.findByIdAndUpdate(
+    req.params.id,
+    updateData,
+    { new: true, runValidators: true }
+  )
     .select('-password')
     .populate('member', 'name department position');
 
   return res.status(200).json({
     success: true,
     message: 'User updated successfully',
-    data: { user: populatedUser },
+    data: { user: updatedUser },
   });
 };
 
