@@ -236,18 +236,7 @@ const sendReplyEmail = async (to, subject, message, clientName, companyInfo = {}
     html: htmlContent,
   };
 
-  try {
     await transporter.sendMail(mailOptions);
-  } catch (error) {
-    if (error.code === 'EAUTH') {
-      throw new Error(
-        `Gmail SMTP authentication failed. The GMAIL_USER or GMAIL_APP_PASSWORD ` +
-        `credentials are invalid or revoked. Please update your environment variables. ` +
-        `Original error: ${error.message}`
-      );
-    }
-    throw new Error(`Failed to send reply email: ${error.message}`);
-  }
 };
 
 const sendContactNotificationEmail = async (clientName, clientEmail, message, companyInfo = {}) => {
@@ -313,26 +302,17 @@ const sendContactNotificationEmail = async (clientName, clientEmail, message, co
     </html>
   `;
 
+  const adminEmail = process.env.ADMIN_EMAIL || companyEmail || 'rskassociatesltd@gmail.com';
+
   const mailOptions = {
     from: `"${clientName}" <${process.env.GMAIL_USER}>`,
-    to: companyEmail,
+    to: adminEmail,
     replyTo: clientEmail,
     subject: `New Contact Message from ${clientName} - ${companyName}`,
     html: htmlContent,
   };
 
-  try {
     await transporter.sendMail(mailOptions);
-  } catch (error) {
-    if (error.code === 'EAUTH') {
-      throw new Error(
-        `Gmail SMTP authentication failed. The GMAIL_USER or GMAIL_APP_PASSWORD ` +
-        `credentials are invalid or revoked. Please update your environment variables. ` +
-        `Original error: ${error.message}`
-      );
-    }
-    throw new Error(`Failed to send contact notification email: ${error.message}`);
-  }
 };
 
 module.exports = {
