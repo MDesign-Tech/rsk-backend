@@ -10,6 +10,37 @@ const createTransporter = () => {
   });
 };
 
+const verifyTransporter = async () => {
+  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+    throw new Error(
+      'Gmail SMTP credentials are not configured. ' +
+      'Please set GMAIL_USER and GMAIL_APP_PASSWORD in your environment variables.'
+    );
+  }
+
+  const transporter = createTransporter();
+
+  try {
+    await transporter.verify();
+    console.log('[emailService] SMTP connection verified successfully');
+    return true;
+  } catch (error) {
+    const errorMessage = error.message || 'Unknown SMTP error';
+    console.error('[emailService] SMTP connection verification failed:', errorMessage);
+
+    if (error.code === 'EAUTH') {
+      throw new Error(
+        `Gmail SMTP authentication failed (EAUTH). ` +
+        `The GMAIL_USER or GMAIL_APP_PASSWORD credentials are invalid. ` +
+        `Please verify your Gmail account credentials and app password. ` +
+        `Original error: ${errorMessage}`
+      );
+    }
+
+    throw new Error(`SMTP connection verification failed: ${errorMessage}`);
+  }
+};
+
 const getSocialMediaIcons = (socialMedia) => {
   if (!socialMedia) return '';
   const icons = [];
@@ -123,7 +154,18 @@ const sendOTPEmail = async (to, otp, clientName, companyInfo = {}) => {
     html: htmlContent,
   };
 
-  await transporter.sendMail(mailOptions);
+  try {
+    await transporter.sendMail(mailOptions);
+  } catch (error) {
+    if (error.code === 'EAUTH') {
+      throw new Error(
+        `Gmail SMTP authentication failed. The GMAIL_USER or GMAIL_APP_PASSWORD ` +
+        `credentials are invalid or revoked. Please update your environment variables. ` +
+        `Original error: ${error.message}`
+      );
+    }
+    throw new Error(`Failed to send OTP email: ${error.message}`);
+  }
 };
 
 const sendReplyEmail = async (to, subject, message, clientName, companyInfo = {}) => {
@@ -194,7 +236,18 @@ const sendReplyEmail = async (to, subject, message, clientName, companyInfo = {}
     html: htmlContent,
   };
 
-  await transporter.sendMail(mailOptions);
+  try {
+    await transporter.sendMail(mailOptions);
+  } catch (error) {
+    if (error.code === 'EAUTH') {
+      throw new Error(
+        `Gmail SMTP authentication failed. The GMAIL_USER or GMAIL_APP_PASSWORD ` +
+        `credentials are invalid or revoked. Please update your environment variables. ` +
+        `Original error: ${error.message}`
+      );
+    }
+    throw new Error(`Failed to send reply email: ${error.message}`);
+  }
 };
 
 const sendContactNotificationEmail = async (clientName, clientEmail, message, companyInfo = {}) => {
@@ -268,10 +321,23 @@ const sendContactNotificationEmail = async (clientName, clientEmail, message, co
     html: htmlContent,
   };
 
-  await transporter.sendMail(mailOptions);
+  try {
+    await transporter.sendMail(mailOptions);
+  } catch (error) {
+    if (error.code === 'EAUTH') {
+      throw new Error(
+        `Gmail SMTP authentication failed. The GMAIL_USER or GMAIL_APP_PASSWORD ` +
+        `credentials are invalid or revoked. Please update your environment variables. ` +
+        `Original error: ${error.message}`
+      );
+    }
+    throw new Error(`Failed to send contact notification email: ${error.message}`);
+  }
 };
 
 module.exports = {
+  createTransporter,
+  verifyTransporter,
   sendOTPEmail,
   sendReplyEmail,
   sendContactNotificationEmail,

@@ -537,8 +537,8 @@ const seedData = async () => {
     } else {
       adminUser = await User.create({
         name: 'RSK associates admin',
-        email: 'rskassociatescpa@gmail.com',
-        password: 'rskassociatescpa@gmail.com',
+        email: 'admin@rskassociates.com',
+        password: 'admin@rskassociates.com',
         role: 'admin',
       });
 
