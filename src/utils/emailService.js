@@ -307,7 +307,7 @@ const sendContactNotificationEmail = async (clientName, clientEmail, message, co
     </html>
   `;
 
-  const adminEmail = process.env.ADMIN_EMAIL || companyEmail || 'rskassociatesltd@gmail.com';
+  const adminEmail = process.env.GMAIL_USER || 'rskassociatesltd@gmail.com';
 
   // Sanitize clientName to prevent header injection
   const safeClientName = clientName.replace(/["\r\n]/g, '').trim() || 'Unknown';
