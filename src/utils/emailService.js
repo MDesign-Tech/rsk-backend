@@ -87,7 +87,7 @@ const sendOTPEmail = async (to, otp, clientName, companyInfo = {}) => {
   const transporter = createTransporter();
 
   const name = clientName === "me" ? 'companyName' : clientName;
-  const companyName = companyInfo.companyName || 'RSK Associates';
+  const companyName = 'RSK Associates';
   const companyLogo = companyInfo.companyLogo || 'https://rsk-dev.vercel.app/rsk-logo.svg';
 
   const htmlContent = `
@@ -165,8 +165,8 @@ const sendOTPEmail = async (to, otp, clientName, companyInfo = {}) => {
 const sendReplyEmail = async (to, subject, message, clientName, companyInfo = {}) => {
   const transporter = createTransporter();
 
-  const name = clientName === "me" ? 'companyName' : clientName;
-  const companyName = companyInfo.companyName || 'RSK Associates';
+  const name = clientName === "me" ? 'RSK Associates' : clientName;
+  const companyName = 'RSK Associates';
   const companyLogo = companyInfo.companyLogo || 'https://rsk-dev.vercel.app/rsk-logo.svg';
 
   const htmlContent = `
