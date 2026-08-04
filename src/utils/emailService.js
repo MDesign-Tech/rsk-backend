@@ -64,7 +64,7 @@ const getSocialMediaIcons = (socialMedia) => {
 };
 
 const getFooterHtml = (companyInfo) => {
-  const companyName = 'RSK Associates';
+  const companyName = companyInfo.companyName || 'RSK Associates';
   const companyAddress = companyInfo.companyAddress || 'KIMIRONKO, KG 11 Ave, Kigali';
   const companyPhone = companyInfo.companyPhone || '+250 788 492 529';
   const companyEmail = companyInfo.companyEmail || 'info@rsk-associates.com';
@@ -86,8 +86,8 @@ const getFooterHtml = (companyInfo) => {
 const sendOTPEmail = async (to, otp, clientName, companyInfo = {}) => {
   const transporter = createTransporter();
 
-  const name = clientName === "me" ? 'companyName' : clientName;
-  const companyName = 'RSK Associates';
+  const name = clientName || 'there';
+  const companyName = companyInfo.companyName || 'RSK Associates';
   const companyLogo = companyInfo.companyLogo || 'https://rsk-dev.vercel.app/rsk-logo.svg';
 
   const htmlContent = `
@@ -165,8 +165,8 @@ const sendOTPEmail = async (to, otp, clientName, companyInfo = {}) => {
 const sendReplyEmail = async (to, subject, message, clientName, companyInfo = {}) => {
   const transporter = createTransporter();
 
-  const name = clientName === "me" ? 'RSK Associates' : clientName;
-  const companyName = 'RSK Associates';
+  const name = clientName || 'there';
+  const companyName = companyInfo.companyName || 'RSK Associates';
   const companyLogo = companyInfo.companyLogo || 'https://rsk-dev.vercel.app/rsk-logo.svg';
 
   const htmlContent = `
@@ -230,14 +230,25 @@ const sendReplyEmail = async (to, subject, message, clientName, companyInfo = {}
     html: htmlContent,
   };
 
+  try {
     await transporter.sendMail(mailOptions);
+  } catch (error) {
+    if (error.code === 'EAUTH') {
+      throw new Error(
+        `Gmail SMTP authentication failed. The GMAIL_USER or GMAIL_APP_PASSWORD ` +
+        `credentials are invalid or revoked. Please update your environment variables. ` +
+        `Original error: ${error.message}`
+      );
+    }
+    throw new Error(`Failed to send reply email: ${error.message}`);
+  }
 };
 
 const sendContactNotificationEmail = async (clientName, clientEmail, message, companyInfo = {}) => {
   const transporter = createTransporter();
 
-  const companyName = 'RSK Associates';
-  const companyEmail = companyInfo.companyEmail || 'rskassociatesltd@gmail.com';
+  const companyName = companyInfo.companyName || 'RSK Associates';
+  const companyEmail = companyInfo.companyEmail || 'info@rsk-associates.com';
   const companyLogo = companyInfo.companyLogo || 'https://rsk-dev.vercel.app/rsk-logo.svg';
 
   const htmlContent = `
@@ -298,15 +309,29 @@ const sendContactNotificationEmail = async (clientName, clientEmail, message, co
 
   const adminEmail = process.env.ADMIN_EMAIL || companyEmail || 'rskassociatesltd@gmail.com';
 
+  // Sanitize clientName to prevent header injection
+  const safeClientName = clientName.replace(/["\r\n]/g, '').trim() || 'Unknown';
+
   const mailOptions = {
-    from: `"${clientName}" <${process.env.GMAIL_USER}>`,
+    from: `"${safeClientName}" <${process.env.GMAIL_USER}>`,
     to: adminEmail,
     replyTo: clientEmail,
-    subject: `New Contact Message from ${clientName} - ${companyName}`,
+    subject: `New Contact Message from ${safeClientName} - ${companyName}`,
     html: htmlContent,
   };
 
+  try {
     await transporter.sendMail(mailOptions);
+  } catch (error) {
+    if (error.code === 'EAUTH') {
+      throw new Error(
+        `Gmail SMTP authentication failed. The GMAIL_USER or GMAIL_APP_PASSWORD ` +
+        `credentials are invalid or revoked. Please update your environment variables. ` +
+        `Original error: ${error.message}`
+      );
+    }
+    throw new Error(`Failed to send contact notification email: ${error.message}`);
+  }
 };
 
 module.exports = {

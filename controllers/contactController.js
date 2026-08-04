@@ -16,7 +16,7 @@ const getCompanyInfo = async () => {
     const locationContact = about.contactMethods ? about.contactMethods.find((c) => c.label === 'Location') : null;
 
     return {
-      companyName: about.title || 'RSK Associates',
+      companyName: 'RSK Associates',
       companyAddress: locationContact ? locationContact.value : 'KIMIRONKO, KG 11 Ave, Kigali',
       companyPhone: phoneContact ? phoneContact.value : '+250 788 492 529',
       companyEmail: emailContact ? emailContact.value : 'info@rsk-associates.com',
@@ -73,8 +73,9 @@ const createContactMessage = async (req, res) => {
   const companyInfo = await getCompanyInfo();
   try {
     await sendContactNotificationEmail(name, email, message.trim(), companyInfo);
+    console.log(`[email] Contact notification sent to admin for message from ${name} <${email}>`);
   } catch (error) {
-    console.error('Error sending contact notification email:', error);
+    console.error('Error sending contact notification email:', error.message);
   }
   
   return res.status(201).json({
@@ -188,8 +189,9 @@ const sendMessage = async (req, res) => {
       conversation.clientName,
       companyInfo
     );
+    console.log(`[email] Reply sent to client ${conversation.clientName} <${conversation.clientEmail}>`);
   } catch (error) {
-    console.error('Error sending reply email:', error);
+    console.error('Error sending reply email:', error.message);
   }
   
   return res.status(200).json({
@@ -278,8 +280,9 @@ const replyToMessage = async (req, res) => {
 
   try {
     await sendReplyEmail(message.email, 'Re: Your Message to RSK Associates', reply, message.name, companyInfo);
+    console.log(`[email] Reply sent to ${message.name} <${message.email}>`);
   } catch (error) {
-    console.error('Error sending reply email:', error);
+    console.error('Error sending reply email:', error.message);
   }
 
   return res.status(200).json({
