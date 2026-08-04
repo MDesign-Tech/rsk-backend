@@ -17,7 +17,7 @@ const OpportunityType = require('./models/OpportunityType');
 const Opportunity = require('./models/Opportunity');
 
 const DEFAULT_ABOUT = {
-  title: "About RSK Associates",
+  title: "RSK Associates",
 
   description:
     "At RSK Associates, we are more than accountants; we are trusted partners on the path to financial success.",

@@ -22,11 +22,9 @@ const verifyTransporter = async () => {
 
   try {
     await transporter.verify();
-    console.log('[emailService] SMTP connection verified successfully');
     return true;
   } catch (error) {
     const errorMessage = error.message || 'Unknown SMTP error';
-    console.error('[emailService] SMTP connection verification failed:', errorMessage);
 
     if (error.code === 'EAUTH') {
       throw new Error(
@@ -66,17 +64,13 @@ const getSocialMediaIcons = (socialMedia) => {
 };
 
 const getFooterHtml = (companyInfo) => {
-  const companyName = companyInfo.companyName || 'RSK Associates';
+  const companyName = 'RSK Associates';
   const companyAddress = companyInfo.companyAddress || 'KIMIRONKO, KG 11 Ave, Kigali';
   const companyPhone = companyInfo.companyPhone || '+250 788 492 529';
   const companyEmail = companyInfo.companyEmail || 'info@rsk-associates.com';
-  const socialMediaHtml = getSocialMediaIcons(companyInfo.socialMedia);
 
   return `
     <div class="footer">
-      <div class="footer-social">
-        ${socialMediaHtml || ''}
-      </div>
       <div class="footer-contact">
         <p><strong>${companyName}</strong></p>
         <p>${companyPhone} | ${companyEmail}</p>
@@ -92,7 +86,7 @@ const getFooterHtml = (companyInfo) => {
 const sendOTPEmail = async (to, otp, clientName, companyInfo = {}) => {
   const transporter = createTransporter();
 
-  const name = clientName || 'there';
+  const name = clientName === "me" ? 'companyName' : clientName;
   const companyName = companyInfo.companyName || 'RSK Associates';
   const companyLogo = companyInfo.companyLogo || 'https://rsk-dev.vercel.app/rsk-logo.svg';
 
@@ -150,7 +144,7 @@ const sendOTPEmail = async (to, otp, clientName, companyInfo = {}) => {
   const mailOptions = {
     from: process.env.GMAIL_USER,
     to,
-    subject: `Verify Your Email - ${companyName} Password Reset`,
+    subject: `Password Reset`,
     html: htmlContent,
   };
 
@@ -171,7 +165,7 @@ const sendOTPEmail = async (to, otp, clientName, companyInfo = {}) => {
 const sendReplyEmail = async (to, subject, message, clientName, companyInfo = {}) => {
   const transporter = createTransporter();
 
-  const name = clientName || 'there';
+  const name = clientName === "me" ? 'companyName' : clientName;
   const companyName = companyInfo.companyName || 'RSK Associates';
   const companyLogo = companyInfo.companyLogo || 'https://rsk-dev.vercel.app/rsk-logo.svg';
 
@@ -242,8 +236,8 @@ const sendReplyEmail = async (to, subject, message, clientName, companyInfo = {}
 const sendContactNotificationEmail = async (clientName, clientEmail, message, companyInfo = {}) => {
   const transporter = createTransporter();
 
-  const companyName = companyInfo.companyName || 'RSK Associates';
-  const companyEmail = companyInfo.companyEmail || 'info@rsk-associates.com';
+  const companyName = 'RSK Associates';
+  const companyEmail = companyInfo.companyEmail || 'rskassociatesltd@gmail.com';
   const companyLogo = companyInfo.companyLogo || 'https://rsk-dev.vercel.app/rsk-logo.svg';
 
   const htmlContent = `
