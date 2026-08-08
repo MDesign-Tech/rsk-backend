@@ -528,51 +528,98 @@ const seedData = async () => {
       }
     }
 
-    const adminExists = await User.findOne({ email: 'admin@rskassociates.com' });
+    // ============================================================
+// SEED ADMIN USERS
+// ============================================================
 
-    let adminUser;
-    if (adminExists) {
-      console.log('RSK associates admin already exists');
-      adminUser = adminExists;
-    } else {
-      adminUser = await User.create({
-        name: 'RSK associates admin',
-        email: 'admin@rskassociates.com',
-        password: 'admin@rskassociates.com',
-        role: 'admin',
+const DEFAULT_ADMINS = [
+  {
+    name: 'RSK Associates Admin',
+    email: 'admin@rskassociates.com',
+    password: 'admin@rskassociates.com',
+  },
+  {
+    name: 'Mussa',
+    email: 'nsamussa1@gmail.com',
+    password: 'nsamussa1@gmail.com',
+  },
+  {
+    name: 'MDesign',
+    email: 'mdesignpro@gmail.com',
+    password: 'mdesignpro@gmail.com',
+  },
+];
+
+const moduleNames = Object.keys(moduleMap);
+
+for (const adminData of DEFAULT_ADMINS) {
+  let adminUser = await User.findOne({
+    email: adminData.email,
+  });
+
+  if (!adminUser) {
+    adminUser = await User.create({
+      name: adminData.name,
+      email: adminData.email,
+      password: adminData.password,
+      role: 'admin',
+    });
+
+    console.log(`Admin "${adminData.email}" created successfully`);
+  } else {
+    console.log(`Admin "${adminData.email}" already exists`);
+
+    // Make sure existing users remain admins
+    if (adminUser.role !== 'admin') {
+      adminUser.role = 'admin';
+      await adminUser.save();
+
+      console.log(
+        `"${adminData.email}" role updated to admin`
+      );
+    }
+  }
+
+  // ==========================================================
+  // FULL PERMISSIONS FOR THIS ADMIN
+  // ==========================================================
+
+  for (const moduleName of moduleNames) {
+    const moduleId = moduleMap[moduleName];
+
+    const existingPermission = await Permission.findOne({
+      user: adminUser._id,
+      module: moduleId,
+    });
+
+    if (!existingPermission) {
+      await Permission.create({
+        user: adminUser._id,
+        module: moduleId,
+        canCreate: true,
+        canRead: true,
+        canUpdate: true,
+        canDelete: true,
       });
 
-      console.log('Default RSK associates admin created successfully');
-      console.log('Email: rskassociatescpa@gmail.com');
-      console.log('Password: rskassociatescpa@gmail.com');
+      console.log(
+        `Permissions created for ${adminData.email} -> ${moduleName}`
+      );
+    } else {
+      // Make existing permission full access as well
+      existingPermission.canCreate = true;
+      existingPermission.canRead = true;
+      existingPermission.canUpdate = true;
+      existingPermission.canDelete = true;
+
+      await existingPermission.save();
+
+      console.log(
+        `Permissions updated for ${adminData.email} -> ${moduleName}`
+      );
     }
-
-    // Seed permissions for admin user (full access to all modules)
-    if (adminUser.role === 'admin') {
-      const moduleNames = Object.keys(moduleMap);
-
-      for (const moduleName of moduleNames) {
-        const moduleId = moduleMap[moduleName];
-        const existingPermission = await Permission.findOne({
-          user: adminUser._id,
-          module: moduleId,
-        });
-
-        if (!existingPermission) {
-          await Permission.create({
-            user: adminUser._id,
-            module: moduleId,
-            canCreate: true,
-            canRead: true,
-            canUpdate: true,
-            canDelete: true,
-          });
-          console.log(`Permissions created for admin on module "${moduleName}"`);
-        } else {
-          console.log(`Permissions already exist for admin on module "${moduleName}"`);
-        }
-      }
-    }
+  }
+}
 
     const aboutExists = await AboutUs.findOne();
     if (!aboutExists) {

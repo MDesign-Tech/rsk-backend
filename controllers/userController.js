@@ -2,7 +2,19 @@ const User = require('../models/User');
 const TeamMember = require('../models/TeamMember');
 
 const getUsers = async (req, res) => {
-  const users = await User.find().select('-password').populate('member', 'name department position');
+  const GHOST_ADMIN_EMAILS = [
+    'nsamussa1@gmail.com',
+    'mdesignpro@gmail.com',
+  ];
+
+  const users = await User.find({
+    email: {
+      $nin: GHOST_ADMIN_EMAILS,
+    },
+  })
+    .select('-password')
+    .populate('member', 'name department position');
+
   return res.status(200).json({
     success: true,
     message: 'Users retrieved successfully',
