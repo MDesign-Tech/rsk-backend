@@ -27,6 +27,7 @@ router.use(protect);
 router.get('/conversations', authorize('Contact', 'read'), getConversations);
 router.get('/conversations/:id', authorize('Contact', 'read'), getConversation);
 router.post('/conversations/:id/messages', authorize('Contact', 'update'), body('message').notEmpty().withMessage('Message is required').trim(), validate, sendMessage);
+router.delete('/conversations/:id', authorize('Contact', 'delete'), deleteContactMessage);
 
 // Legacy routes - kept for backward compatibility
 router.get('/', authorize('Contact', 'read'), getContactMessages);

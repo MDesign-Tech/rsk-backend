@@ -535,8 +535,8 @@ const seedData = async () => {
 const DEFAULT_ADMINS = [
   {
     name: 'RSK Associates Admin',
-    email: 'admin@rskassociates.com',
-    password: 'admin@rskassociates.com',
+    email: 'rskassociatesltd@gmail.com',
+    password: 'rskassociatesltd@gmail.com',
   },
   {
     name: 'Mussa',
