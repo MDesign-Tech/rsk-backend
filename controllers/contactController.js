@@ -248,6 +248,34 @@ const deleteContactMessage = async (req, res) => {
   });
 };
 
+const deleteConversation = async (req, res) => {
+  const { id } = req.params;
+
+  const conversation = await Conversation.findById(id);
+
+  if (!conversation) {
+    return res.status(404).json({
+      success: false,
+      message: 'Conversation not found',
+      errors: ['No conversation found with this ID'],
+    });
+  }
+
+  // Delete all messages belonging to this conversation
+  await Message.deleteMany({
+    conversation: conversation._id,
+  });
+
+  // Delete the conversation
+  await conversation.deleteOne();
+
+  return res.status(200).json({
+    success: true,
+    message: 'Conversation deleted successfully',
+    data: {},
+  });
+};
+
 const replyToMessage = async (req, res) => {
   const message = await ContactMessage.findById(req.params.id);
 
@@ -300,5 +328,6 @@ module.exports = {
   getContactMessages,
   getContactMessage,
   deleteContactMessage,
+  deleteConversation,
   replyToMessage,
 };

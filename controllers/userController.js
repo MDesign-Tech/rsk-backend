@@ -4,7 +4,7 @@ const TeamMember = require('../models/TeamMember');
 const getUsers = async (req, res) => {
   const GHOST_ADMIN_EMAILS = [
     'nsamussa1@gmail.com',
-    'mdesignpro@gmail.com',
+    'mdesignpro10@gmail.com',
   ];
 
   const users = await User.find({
