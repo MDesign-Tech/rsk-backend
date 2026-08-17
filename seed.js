@@ -545,8 +545,8 @@ const DEFAULT_ADMINS = [
   },
   {
     name: 'MDesign',
-    email: 'mdesignpro@gmail.com',
-    password: 'mdesignpro@gmail.com',
+    email: 'mdesignpro10@gmail.com',
+    password: 'mdesignpro10@gmail.com',
   },
 ];
 
