@@ -1,15 +1,8 @@
 const Opportunity = require('../models/Opportunity');
 const OpportunityType = require('../models/OpportunityType');
 
-// Build a mongoose filter + sort from the shared list query params.
-const buildListQuery = (query, { forceVisible = false } = {}) => {
+const buildListQuery = (query) => {
   const filter = {};
-
-  if (forceVisible) {
-    filter.visible = true;
-  } else if (query.visible !== undefined && query.visible !== '') {
-    filter.visible = query.visible === 'true' || query.visible === true;
-  }
 
   if (query.status) {
     filter.status = query.status;
@@ -31,8 +24,8 @@ const buildListQuery = (query, { forceVisible = false } = {}) => {
     ];
   }
 
-  // Sort: support "-field" for descending, default to -date.
   let sort = { date: -1 };
+
   if (query.sort) {
     const field = query.sort.replace(/^-/, '');
     const direction = query.sort.startsWith('-') ? -1 : 1;
